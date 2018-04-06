@@ -389,6 +389,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableIVTT",                        "O\tdisable IV Type transformation",                 TR::Options::disableOptimization, IVTypeTransformation, 0, "P"},
    {"disableJavaEightStartupHeuristics", "M\t", SET_OPTION_BIT(TR_DisableJava8StartupHeuristics), "F", NOT_IN_SUBSET },
    {"disableJProfiling",                  "O\tdisable JProfiling", RESET_OPTION_BIT(TR_EnableJProfiling), "F"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"disableJProfilingRecompLoopTest",    "O\tdisable checking loop counters for tripping recompilation of profiling method body",  TR::Options::disableOptimization, jProfilingRecompLoopTest, 0, "P"},
+#endif
    {"disableJProfilingThread",            "O\tdisable separate thread for JProfiling", SET_OPTION_BIT(TR_DisableJProfilerThread), "F", NOT_IN_SUBSET},
    {"disableKnownObjectTable",            "O\tdisable support for including heap object info in symbol references", SET_OPTION_BIT(TR_DisableKnownObjectTable), "F"},
    {"disableLastITableCache",             "C\tdisable using class lastITable cache for interface dispatches",  SET_OPTION_BIT(TR_DisableLastITableCache), "F"},
@@ -890,6 +893,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 
    {"jitMethodEntryAlignmentBoundary=",      "C<nnn>\tAlignment boundary (in bytes) for JIT method entry",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jitMethodEntryAlignmentBoundary), 0, "F%d"},
+   {"jProfilingLoopRecompThreshold=",      "C<nnn>\tLoop recompilation threshold for jProfiling",
+        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingLoopRecompThreshold), 0, "F%d"},
+   {"jProfilingMethodRecompThreshold=",      "C<nnn>\tMethod invocations for jProfiling body",
+        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingMethodRecompThreshold), 0, "F%d"},
    {"keepBCDWidening",       "O\tstress testing option -- do not remove widening BCD operations", SET_OPTION_BIT(TR_KeepBCDWidening), "F" },
 
    {"labelTargetNOPLimit=", "C<nnn>\t(labelTargetAddress&0xff) > _labelTargetNOPLimit are padded out with NOPs until the next 256 byte boundary",
@@ -1269,6 +1276,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceSwitchAnalyzer",              "L\ttrace switch analyzer",                        TR::Options::traceOptimization, switchAnalyzer, 0, "P"},
    {"traceTempUsage",                   "L\ttrace number of temps used",                   SET_OPTION_BIT(TR_TraceTempUsage), "P"},
    {"traceTempUsageMore",               "L\ttrace usage of temps, showing each temp used", SET_OPTION_BIT(TR_TraceTempUsageMore), "P"},
+   {"traceTiming",               "L\tTrace Timing of all compilation phase", SET_OPTION_BIT(TR_TraceTiming), "P"},
    {"traceTreeCleansing",               "L\ttrace tree cleansing",                         TR::Options::traceOptimization, treesCleansing, 0, "P"},
    {"traceTreePatternMatching",         "L\ttrace the functioning of the TR_Pattern framework", SET_OPTION_BIT(TR_TraceTreePatternMatching), "F"},
    {"traceTrees",                       "L\tdump trees after each compilation phase", SET_OPTION_BIT(TR_TraceTrees), "P" },
@@ -2580,6 +2588,8 @@ OMR::Options::jitPreProcess()
 #else
    _jitMethodEntryAlignmentBoundary = 0;
 #endif
+   _jProfilingMethodRecompThreshold = 4000;
+   _jProfilingLoopRecompThreshold = 2000;
    _blockShufflingSequence = "S";
    _delayCompile = 0;
    _largeNumberOfLoops = 6500;
