@@ -101,6 +101,11 @@ omrtime_msec_clock(struct OMRPortLibrary *portLibrary)
 uintptr_t
 omrtime_usec_clock(struct OMRPortLibrary *portLibrary)
 {
+	struct timeval tp;
+
+	gettimeofday(&tp, NULL);
+	return (tp.tv_sec * 1000000) + tp.tv_usec;
+   /*
 	int64_t usec = maxprec() / OMRPORT_TIME_HIRES_MICROTIME_DIVISOR;
 
 	if ((usec - PPG_last_clock_delta_update > OMRTIME_CLOCK_DELTA_ADJUSTMENT_INTERVAL_USEC)
@@ -112,6 +117,7 @@ omrtime_usec_clock(struct OMRPortLibrary *portLibrary)
 	usec += (PPG_software_msec_clock_delta * 1000);
 
 	return usec;
+   */
 }
 
 uint64_t
