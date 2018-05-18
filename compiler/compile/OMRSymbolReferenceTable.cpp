@@ -1596,7 +1596,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
          sym = size ? TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type, size, comp()->fe()) :
                       TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type);
          _numInternalPointers++;
-         if (_numInternalPointers > comp()->maxInternalPointers())
+         if (_numInternalPointers > comp()->maxInternalPointers() && (comp()->getProfilingMode() != JProfiling))
             {
             comp()->failCompilation<TR::ExcessiveComplexity>("Excessive number of internal pointers");
             }
