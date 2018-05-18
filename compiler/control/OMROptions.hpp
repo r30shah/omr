@@ -945,7 +945,7 @@ enum TR_CompilationOptions
    TR_TraceSEL                                        = 0x00000200 + 29, // Sign Extension Load
    TR_DisableSupportForCpuSpentInCompilation          = 0x00000400 + 29,
    TR_DisableSwitchAwayFromProfilingForHotAndVeryhot  = 0x00000800 + 29,
-   // Available                                       = 0x00001000 + 29,
+   TR_EnableJProfilingStopProfilingRecomp             = 0x00001000 + 29,
    TR_UseHigherCountsForNonSCCMethods                 = 0x00002000 + 29,
    TR_UseHigherMethodCountsAfterStartup               = 0x00004000 + 29,
    TR_DisableNextGenHCR                               = 0x00008000 + 29,
@@ -965,7 +965,7 @@ enum TR_CompilationOptions
    TR_DontRIUpgradeAOTWarmMethods                     = 0x20000000 + 29,
    TR_UseRIOnlyForLargeQSZ                            = 0x20000000 + 29,
    TR_EnableAggressiveLiveness                        = 0x40000000 + 29,
-   // Available                                       = 0x80000000 + 29,
+   TR_EnableJProfilingStopProfilingValue              = 0x80000000 + 29,
 
 
    // Option word 30
@@ -1946,6 +1946,8 @@ public:
    int32_t getJitMethodEntryAlignmentBoundary(TR::CodeGenerator *cg);
    void setJitMethodEntryAlignmentBoundary(int32_t boundary) { _jitMethodEntryAlignmentBoundary = boundary; }
 
+   int32_t getJProfilingMethodRecompThreshold() { return _jProfilingMethodRecompThreshold; }
+   int32_t getJProfilingLoopRecompThreshold() { return _jProfilingLoopRecompThreshold; }
    inline static float getMinProfiledCheckcastFrequency() { return _minProfiledCheckcastFrequency/((float)100.0); }
    static bool isQuickstartDetected() { return _quickstartDetected; }
    void disableCHOpts(); // disable CHOpts, but also IPA and prex which depend on the chtable
@@ -2413,6 +2415,8 @@ private:
    bool                        _isAOTCompile;
 
    int32_t                     _jitMethodEntryAlignmentBoundary; /* Alignment boundary for JIT method entry */
+   int32_t                     _jProfilingMethodRecompThreshold;
+   int32_t                     _jProfilingLoopRecompThreshold;
    char *                      _blockShufflingSequence;
    int32_t                     _randomSeed;
    TR_MCTLogs *                _logListForOtherCompThreads;
