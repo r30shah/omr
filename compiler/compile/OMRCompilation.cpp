@@ -914,7 +914,7 @@ int32_t OMR::Compilation::compile()
    if (!self()->getOption(TR_DisableSupportForCpuSpentInCompilation))
       _cpuTimeAtStartOfCompilation = TR::Compiler->vm.cpuTimeSpentInCompilationThread(self());
 
-   bool printCodegenTime = TR::Options::getCmdLineOptions()->getOption(TR_CummTiming);
+   bool printCodegenTime = TR::Options::getCmdLineOptions()->getOption(TR_CummTiming) || self()->getOption(TR_TraceTiming) ;
 
    if (self()->isOptServer())
       {
@@ -1175,6 +1175,14 @@ int32_t OMR::Compilation::compile()
 
    if (printCodegenTime) compTime.stopTiming(self());
 
+   if (self()->getOption(TR_TraceTiming))
+      {
+      fprintf(stderr, "Method: {%s}{%s}\n", self()->signature(),self()->getHotnessName(self()->getMethodHotness()));
+      fprintf(stderr, "Compilation Time   = %9.6f\n", compTime.secondsTaken());
+      fprintf(stderr, "Gen IL Time        = %9.6f\n", genILTime.secondsTaken());
+      fprintf(stderr, "Optimization Time  = %9.6f\n", optTime.secondsTaken());
+      fprintf(stderr, "Code Gen Time      = %9.6f\n", codegenTime.secondsTaken());
+      }
    // Flush the log
    //
    if (self()->getOutFile() != NULL && self()->getOption(TR_TraceAll))
@@ -2077,7 +2085,7 @@ OMR::Compilation::shutdown(TR_FrontEnd * fe)
    if (TR::Options::isFullyInitialized() && TR::Options::getCmdLineOptions())
       logFile = TR::Options::getCmdLineOptions()->getLogFile();
 
-   bool printCummStats = ((fe!=0) && TR::Options::getCmdLineOptions() && TR::Options::getCmdLineOptions()->getOption(TR_CummTiming));
+   bool printCummStats = ((fe!=0) && TR::Options::getCmdLineOptions() && TR::Options::getCmdLineOptions()->getOption(TR_CummTiming)) ;
    if (printCummStats)
       {
       fprintf(stderr, "Compilation Time   = %9.6f\n", compTime.secondsTaken());

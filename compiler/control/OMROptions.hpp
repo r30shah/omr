@@ -507,7 +507,7 @@ enum TR_CompilationOptions
    TR_EnableMonitorCacheLookup                = 0x00040000 + 13,
    TR_TraceReloCG                             = 0x00080000 + 13,
    // Available                               = 0x00100000 + 13,
-   // Available                               = 0x00200000 + 13,
+   TR_TraceTiming                             = 0x00200000 + 13,
    TR_TraceTrivialDeadTreeRemoval             = 0x00400000 + 13,
    // Available                               = 0x00800000 + 13,
    TR_PaintAllocatedFrameSlotsDead            = 0x01000000 + 13, //x86 Only
