@@ -466,7 +466,7 @@ enum TR_CompilationOptions
    TR_DisableZ13LoadAndMask                   = 0x00000040 + 12,
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,
-   // Available                               = 0x00000200 + 12,
+   TR_AvoidDispatchInProfiling                = 0x00000200 + 12,
    // Available                               = 0x00000400 + 12,
    TR_X86UseMFENCE                            = 0x00000800 + 12,
    // Available                               = 0x00001000 + 12,

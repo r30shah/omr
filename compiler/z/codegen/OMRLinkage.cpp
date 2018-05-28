@@ -2938,7 +2938,33 @@ OMR::Z::Linkage::buildNativeDispatch(TR::Node * callNode,
    {
    if (self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(), "\nbuildNativeDispatch\n");
-
+   if ((callNode->getSymbolReference()->getReferenceNumber() == TR_jProfile32BitValue ||
+      callNode->getSymbolReference()->getReferenceNumber() == TR_jProfile64BitValue ) && self()->comp()->getOption(TR_AvoidDispatchInProfiling) && self()->comp()->getOption(TR_DisableHPRSpill))
+      {
+      TR::CodeGenerator * cg = self()->cg();
+      if (self()->comp()->getOption(TR_TraceCG))
+      traceMsg(self()->comp(), "This is a special jProfilevalue call\n");
+      uint32_t offsetJ9SP =  static_cast<uint32_t>(offsetof(J9VMThread, sp));
+      TR::Register *vmThreadRegister = cg->getMethodMetaDataRealRegister();
+      TR::Register * javaStackPointerRegister = cg->getStackPointerRealRegister();
+      TR::Instruction * cursor = generateRXInstruction(cg, TR::InstOpCode::getStoreOpCode(), callNode, javaStackPointerRegister, generateS390MemoryReference(vmThreadRegister, offsetJ9SP, cg));
+      cursor = generateRSInstruction(cg, TR::InstOpCode::getStoreMultipleOpCode(), callNode,
+                  getS390RealRegister(TR::RealRegister::GPR0), getS390RealRegister(TR::RealRegister::GPR15), generateS390MemoryReference(getS390RealRegister(getStackPointerRegister()), 528, cg), cursor);
+      TR::RegisterDependencyConditions* preDeps = generateRegisterDependencyConditions(2, 0, cg);
+      preDeps->addPreCondition(cg->gprClobberEvaluate(callNode->getChild(0)), TR::RealRegister::GPR2);
+      preDeps->addPreCondition(cg->gprClobberEvaluate(callNode->getChild(1)), TR::RealRegister::GPR3);
+      TR::SymbolReference * callSymRef = callNode->getSymbolReference();
+      void * destAddr = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getMethodAddress();
+      cursor = new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, cg->machine()->getS390RealRegister(self()->getReturnAddressRegister()), destAddr, callSymRef, cg);
+      cursor->setDependencyConditions(preDeps);
+      preDeps->stopUsingDepRegs(cg);
+      cg->decReferenceCount(callNode->getFirstChild());
+      cg->decReferenceCount(callNode->getSecondChild());
+      cursor = generateRSInstruction(cg, TR::InstOpCode::getLoadMultipleOpCode(), callNode,
+                  getS390RealRegister(TR::RealRegister::GPR0), getS390RealRegister(TR::RealRegister::GPR15), generateS390MemoryReference(getS390RealRegister(getStackPointerRegister()), 528, cg), cursor);
+      cursor = generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), callNode, javaStackPointerRegister, generateS390MemoryReference(vmThreadRegister, offsetJ9SP, cg), cursor);
+      return NULL;
+      }
    bool hasGlRegDeps;
    int64_t killMask = -1;
    TR::Node *GlobalRegDeps;

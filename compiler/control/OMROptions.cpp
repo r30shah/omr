@@ -124,6 +124,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                  SET_OPTION_BIT(TR_AssumeStartupPhaseUntilToldNotTo), "F" },
    {"assumeStrictFP",     "C\talways assume strictFP semantics",
         SET_OPTION_BIT(TR_StrictFP), "F" },
+   {"avoidDispatchInProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_AvoidDispatchInProfiling), "F"},
    {"bcount=",            "O<nnn>\tnumber of invocations before compiling methods with loops",
         TR::Options::setCount, offsetof(OMR::Options,_initialBCount), 0, " %d"},
    {"bestAvailOpt",       "O\tdeprecated; equivalent to optLevel=warm",
