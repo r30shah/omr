@@ -423,6 +423,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLoopStrider",                 "O\tdisable loop strider",                           TR::Options::disableOptimization, loopStrider, 0, "P"},
    {"disableLoopTransfer",                "O\tdisable the loop transfer part of loop versioner", SET_OPTION_BIT(TR_DisableLoopTransfer), "F"},
    {"disableLoopVersioner",               "O\tdisable loop versioner",                         TR::Options::disableOptimization, loopVersioner, 0, "P"},
+   {"disableLoopVersionerWhenProfiling" ,"O\tdisable loop replicator in profiling compilations", SET_OPTION_BIT(TR_DisableLoopVersionerWhenProfiling), "P"},
    {"disableMarkingOfHotFields",          "O\tdisable marking of Hot Fields",                  SET_OPTION_BIT(TR_DisableMarkingOfHotFields), "F"},
    {"disableMarshallingIntrinsics",       "O\tDisable packed decimal to binary marshalling and un-marshalling optimization. They will not be inlined.", SET_OPTION_BIT(TR_DisableMarshallingIntrinsics), "F"},
    {"disableMaskVFTPointers",             "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaskVFTPointers), "F"},
