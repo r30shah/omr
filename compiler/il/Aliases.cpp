@@ -243,7 +243,9 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          case TR::Symbol::IsShadow:
          case TR::Symbol::IsStatic:
             {
-            if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
+            // For condy symbol, be conservative due to potential side effects from bootstrap method
+            if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+	        _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                 self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
                 (_symbol->isArrayShadowSymbol() && comp->getMethodSymbol()->hasVeryRefinedAliasSets()))
                {
@@ -703,7 +705,9 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          }
       case TR::Symbol::IsStatic:
          {
-         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || self()->isLiteralPoolAddress() || self()->isFromLiteralPool() || _symbol->isVolatile())
+         // For condy symbol, be conservative due to potential side effects from bootstrap method
+         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+	     self()->isLiteralPoolAddress() || self()->isFromLiteralPool() || _symbol->isVolatile())
             {
             return &comp->getSymRefTab()->aliasBuilder.defaultMethodDefAliases();
             }
@@ -766,7 +770,9 @@ OMR::SymbolReference::sharesSymbol(bool includingGCSafePoint)
       case TR::Symbol::IsShadow:
       case TR::Symbol::IsStatic:
          {
-         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
+         // For condy symbol, be conservative due to potential side effects from bootstrap method
+         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+	       _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
                _symbol->isArrayShadowSymbol() && c->getMethodSymbol()->hasVeryRefinedAliasSets())
             {
