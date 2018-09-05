@@ -4215,6 +4215,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_S390jitMethodIsNative:                            return "__jitMethodIsNative";
          case TR_S390jitMethodIsSync:                              return "__jitMethodIsSync";
          case TR_S390jitResolveClass:                              return "__jitResolveClass";
+         case TR_S390jitReolveConstantDynamic:                     return "__jitResolveConstantDynamic";
          case TR_S390jitResolveField:                              return "__jitResolveField";
          case TR_S390jitResolveFieldSetter:                        return "__jitResolveFieldSetter";
          case TR_S390jitResolveInterfaceMethod:                    return "__jitResolveInterfaceMethod";
