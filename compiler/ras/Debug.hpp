@@ -379,6 +379,7 @@ public:
    virtual void addInstructionComment(TR::Instruction *, char*, ...);
 
    virtual TR::CompilationFilters * getInlineFilters() { return _inlineFilters; }
+   virtual TR::CompilationFilters * getGeneralUseFilters() { return _generalUseFilters; }
 
    virtual TR_FrontEnd *fe() { return _fe; }
    virtual TR::Compilation *comp() { return _comp; }
@@ -411,6 +412,7 @@ public:
 
    static void dumpOptions(char *optionsType, char *options, char *envOptions, TR::Options *cmdLineOptions, TR::OptionTable *jitOptions, TR::OptionTable *feOptions, void *, TR_FrontEnd *);
    virtual char *          limitfileOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr = 0);
+   virtual char *          generalUseFileOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr = 0);
    virtual char *          inlinefileOption(char *, void *, TR::OptionTable *, TR::Options *);
    virtual char *          limitOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit);
    virtual int32_t *       loadCustomStrategy(char *optFileName);
@@ -1125,6 +1127,7 @@ protected:
    TR::CompilationFilters    * _compilationFilters;
    TR::CompilationFilters    * _relocationFilters;
    TR::CompilationFilters    * _inlineFilters;
+   TR::CompilationFilters    * _generalUseFilters;
    bool                       _usesSingleAllocMetaData;
    TR_BitVector               _nodeChecklist;
    TR_BitVector               _structureChecklist;
