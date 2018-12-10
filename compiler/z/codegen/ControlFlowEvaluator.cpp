@@ -157,7 +157,11 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
       }
 
    TR_VirtualGuardSite * site = NULL;
-   if (comp->compileRelocatableCode())
+   if (node->isSideEffectGuard())
+      {
+      site = comp->addSideEffectNOPSite();
+      }
+   else if (comp->compileRelocatableCode())
       {
       site = (TR_VirtualGuardSite *)comp->addAOTNOPSite();
       TR_AOTGuardSite *aotSite = (TR_AOTGuardSite *)site;
@@ -183,14 +187,10 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
             break;
          }
       }
-   else if (!node->isSideEffectGuard())
+   else
       {
       TR_VirtualGuard * virtualGuard = comp->findVirtualGuardInfo(node);
       site = virtualGuard->addNOPSite();
-      }
-   else
-      {
-      site = comp->addSideEffectNOPSite();
       }
 
    TR::RegisterDependencyConditions * deps;
