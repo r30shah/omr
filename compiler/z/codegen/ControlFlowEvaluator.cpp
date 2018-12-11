@@ -169,6 +169,7 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
          case TR_DirectMethodGuard:
          case TR_NonoverriddenGuard:
          case TR_InterfaceGuard:
+         case TR_AbstractGuard:
          case TR_MethodEnterExitGuard:
          case TR_HCRGuard:
          //case TR_AbstractGuard:
