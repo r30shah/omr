@@ -97,7 +97,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          TR::SymbolReference *reloSymRef= (reloType==TR_ClassAddress)?getNode()->getSymbolReference():getSymbolReference();
          if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
-            cg()->addExternalRelocation(new (cg()->trHeapMemort()) TR::ExternalRelocation(cursor,
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                        getRawData(),
                                                                                        (uint8_t *) TR::SymbolType::typeClass,
                                                                                        TR_SymbolFromManager,
@@ -198,7 +198,6 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          symbolKind = TR::SymbolType::typeMethod;
          // intentional fall through
       case TR_ClassPointer:
-         {
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
          if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
