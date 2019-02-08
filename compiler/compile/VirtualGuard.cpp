@@ -306,11 +306,16 @@ TR_VirtualGuard::createMethodGuardWithReceiver
    TR_OpaqueClassBlock *realThisClass = thisClass;
    if (thisClass && TR::Compiler->cls.isInterfaceClass(comp, thisClass) && callSymRef->getSymbol()->castToMethodSymbol()->isInterface())
       realThisClass = calleeSymbol->getResolvedMethod()->classOfMethod();
-
-   if (realThisClass && !TR::Compiler->cls.isInterfaceClass(comp, realThisClass) && callSymRef->getSymbol()->castToMethodSymbol()->isInterface())
+   bool isInterfaceMethodGuard = false;
+   if (isInterfaceMethodGuard = (realThisClass && !TR::Compiler->cls.isInterfaceClass(comp, realThisClass) && callSymRef->getSymbol()->castToMethodSymbol()->isInterface()))
+      {
       offset = callSymRef->getOwningMethod(comp)->getResolvedInterfaceMethodOffset(realThisClass, callSymRef->getCPIndex());
+      TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "profiledInterfaceTest/({%s}{%s})", comp->signature(), comp->getHotnessName(comp->getMethodHotness())));
+      }
    else
+      {
       offset = (int32_t) callSymRef->getOffset();
+      }
 
    TR::Node* vftEntry =
       TR::Node::createWithSymRef(TR::aloadi, 1, 1, vft,
@@ -326,7 +331,7 @@ TR_VirtualGuard::createMethodGuardWithReceiver
    setGuardKind(guard, kind, comp);
 
    TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_MethodTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
-
+   vg->setIsInterfaceMethodGuard(isInterfaceMethodGuard);
    if (comp->compileRelocatableCode())
       vg->setCannotBeRemoved();
 

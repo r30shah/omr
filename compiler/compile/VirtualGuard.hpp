@@ -225,6 +225,8 @@ class TR_VirtualGuard
    TR_VirtualGuardKind     getKind()        { return _kind; }
    TR_OpaqueClassBlock    *getThisClass()   { return _thisClass; }
    void                    setThisClass(TR_OpaqueClassBlock *thisClass)   { _thisClass = thisClass; }
+   void setIsInterfaceMethodGuard(bool b) { _isInterfaceMethodGuard = b; }
+   bool getIsInterfaceMethodGuard() { return _isInterfaceMethodGuard; }
 
    uintptrj_t *mutableCallSiteObject()
       {
@@ -296,6 +298,7 @@ class TR_VirtualGuard
    bool                      _evalChildren;
    bool                      _mergedWithHCRGuard;
    bool                      _mergedWithOSRGuard;
+   bool                      _isInterfaceMethodGuard;
 
    // These reference locations are non-null only for MutableCallSiteGuards
    uintptrj_t                *_mutableCallSiteObject;
