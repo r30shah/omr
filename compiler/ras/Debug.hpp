@@ -387,6 +387,7 @@ public:
    virtual void addInstructionComment(TR::Instruction *, char*, ...);
 
    virtual TR::CompilationFilters * getInlineFilters() { return _inlineFilters; }
+   virtual TR::CompilationFilters * getLimitSpecialFilters() { return _limitSpecialFilters; }
 
    virtual TR_FrontEnd *fe() { return _fe; }
    virtual TR::Compilation *comp() { return _comp; }
@@ -419,6 +420,7 @@ public:
 
    static void dumpOptions(char *optionsType, char *options, char *envOptions, TR::Options *cmdLineOptions, TR::OptionTable *jitOptions, TR::OptionTable *feOptions, void *, TR_FrontEnd *);
    virtual char *          limitfileOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr = 0);
+   virtual char *          limitSpecialFileOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr = 0);
    virtual char *          inlinefileOption(char *, void *, TR::OptionTable *, TR::Options *);
    virtual char *          limitOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit);
    virtual int32_t *       loadCustomStrategy(char *optFileName);
@@ -429,6 +431,7 @@ public:
    virtual bool            methodSigCanBeCompiledOrRelocated(const char *, TR_FilterBST * &, bool isRelocation, TR_Method::Type methodType);
    virtual bool            methodCanBeFound(TR_Memory *, TR_ResolvedMethod *, TR::CompilationFilters *, TR_FilterBST * &);
    virtual bool            methodSigCanBeFound(const char *, TR::CompilationFilters *, TR_FilterBST * &, TR_Method::Type methodType);
+   virtual bool            canApplyOptInMethod(TR::Compilation *comp);
    virtual TR::CompilationFilters * getCompilationFilters() { return _compilationFilters; }
    virtual TR::CompilationFilters * getRelocationFilters() { return _relocationFilters; }
    virtual void            clearFilters(TR::CompilationFilters *);
@@ -1137,6 +1140,7 @@ protected:
    TR::CompilationFilters    * _compilationFilters;
    TR::CompilationFilters    * _relocationFilters;
    TR::CompilationFilters    * _inlineFilters;
+   TR::CompilationFilters    * _limitSpecialFilters;
    bool                       _usesSingleAllocMetaData;
    TR_BitVector               _nodeChecklist;
    TR_BitVector               _structureChecklist;

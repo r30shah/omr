@@ -701,6 +701,136 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
    }
 
 char *
+TR_Debug::limitSpecialFileOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr)
+   {
+      char *endOpt = option;
+   char *name = option;
+   char *fail = option;
+
+   bool range = false;
+   if (*endOpt == '(')
+      {
+      ++endOpt;
+      ++name;
+      range = true;
+      }
+
+   for (; *endOpt && *endOpt != ','; endOpt++)
+      {}
+   int32_t len = endOpt - name;
+   if (!len)
+      return option;
+
+   char *limitFileName = (char *)(TR::Compiler->regionAllocator.allocate(len+1));
+   memcpy(limitFileName, name, len);
+   limitFileName[len] = 0;
+   entry->msgInfo = (intptrj_t)limitFileName;
+
+   intptrj_t firstLine = 1, lastLine = INT_MAX;
+   if (range)
+      {
+      if (!*endOpt)
+         return option;
+      firstLine = TR::Options::getNumericValue(++endOpt);
+      if (*endOpt == ',')
+         lastLine = TR::Options::getNumericValue(++endOpt);
+      if (*endOpt != ')')
+         return option;
+      ++endOpt;
+      }
+
+   FILE *limitFile = fopen(limitFileName, "r");
+   if (limitFile)
+      {
+      _limitSpecialFilters = findOrCreateFilters(_limitSpecialFilters);
+      TR::CompilationFilters * filters = _limitSpecialFilters;
+      filters->setDefaultExclude(true);
+
+      char          limitReadBuffer[1024];
+      bool          limitFileError = false;
+      int32_t       lineNumber = 0;
+      /*
+      TR_PseudoRandomNumbersListElement *pseudoRandomListHead = NULL;
+      if (pseudoRandomListHeadPtr)
+         pseudoRandomListHead = *pseudoRandomListHeadPtr;
+      TR_PseudoRandomNumbersListElement *curPseudoRandomListElem = pseudoRandomListHead;
+      */
+      int32_t curIndex = 0;
+
+      while(fgets(limitReadBuffer, sizeof(limitReadBuffer), limitFile))
+         {
+         ++lineNumber;
+         if (lineNumber < firstLine || lineNumber > lastLine)
+            continue;
+
+         char includeFlag = limitReadBuffer[0];
+         if (includeFlag == '+' || includeFlag == '-')
+            {
+            char *p = limitReadBuffer+1;
+            int32_t optionSet;
+            if (*p >= '0' && *p <= '9')
+               optionSet = *(p++) - '0';
+            else
+               optionSet = 0;
+            if (*(p++) != ' ')
+               {
+               limitFileError = true;
+               break;
+               }
+            // Skip hotness level if it is present
+            //
+            if (*p == '(')
+               {
+               for (p++; *p && *p != ')'; p++)
+                  {}
+               if (*(p++) != ')')
+                  {
+                  limitFileError = true;
+                  break;
+                  }
+               if (*(p++) != ' ')
+                  {
+                  limitFileError = true;
+                  break;
+                  }
+               }
+
+            //if (optionSet > 0)
+            //   filters->setDefaultExclude(false);
+
+            if (!addFilter(p, (('+' == includeFlag) ? 0 : 1), optionSet, lineNumber, filters))
+               {
+               limitFileError = true;
+               break;
+               }
+            }
+         }
+      if (limitFileError)
+         {
+         TR_VerboseLog::write("<JIT: fatal: bad limit file entry --> '%s'>\n", limitReadBuffer);
+         return fail;
+         }
+      fclose(limitFile);
+      }
+   else
+      {
+      TR_VerboseLog::write("<JIT: fatal: unable to read limit file --> '%s'>\n", limitFileName);
+      return fail; //We want to fail if we can't read the file because it is too easy to miss that the file wasn't picked up
+      }
+   return endOpt;
+   }
+
+bool
+TR_Debug::canApplyOptInMethod(TR::Compilation *comp)
+   {
+   TR_FilterBST *filterInfo = NULL;
+   TR::CompilationFilters *limitSpecialFilters = getLimitSpecialFilters();
+   if (limitSpecialFilters)
+      {
+      return methodSigCanBeFound(comp->signature(), limitSpecialFilters, filterInfo, TR_Method::J9);
+      }
+   }
+char *
 TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit)
    {
    char *p = option;
