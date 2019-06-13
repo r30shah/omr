@@ -982,9 +982,9 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                dep->getHighGlobalRegisterNumber() == nodeInfoEntry->second.second->getHighGlobalRegisterNumber())
                {
                // PassThrough uses same register, which should already mark as unavailable. Replace that with regLoad for sanity
-               regDeps->setAndIncChild(i, nodeInfoEntry->second.second);
-               value->decReferenceCount();
-               dep->decReferenceCount();
+               // regDeps->setAndIncChild(i, nodeInfoEntry->second.second);
+               // value->decReferenceCount();
+               // dep->decReferenceCount();
                }
             else if (needToCreateRegStore && (!needToCheckStoreRegPostSplitPoint || !checkStoreRegNodeListForNode(dep, storeRegNodePostSplitPoint)))
                {
@@ -1025,6 +1025,122 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
       }
    }
 
+static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol, TR::Node *value)
+   {
+   if (value->getOpCode().hasSymbolReference() && value->getSymbolReference()->getSymbol()->isAutoOrParm())
+      return value->getSymbolReference();
+   TR::DataType dataType = value->getDataType();
+   TR::SymbolReference *symRef = NULL;
+   if (value->isInternalPointer() && value->getPinningArrayPointer())
+      {
+      symRef = comp->getSymRefTab()->createTemporary(methodSymbol, TR::Address, true, 0);
+      TR::Symbol *symbol = symRef->getSymbol()->castToInternalPointerAutoSymbol()->setPinningArrayPointer(value->getPinningArrayPointer());
+      }
+   else
+      {
+      bool isInternalPointer = false;
+      if ((value->hasPinningArrayPointer() &&
+            value->computeIsInternalPointer()) ||
+               (value->getOpCode().isLoadVarDirect() &&
+                  value->getSymbolReference()->getSymbol()->isAuto() &&
+                  value->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer()))
+         isInternalPointer = true;
+      
+      if (value->isNotCollected() && dataType == TR::Address)
+         {
+         symRef = comp->getSymRefTab()->createTemporary(methodSymbol, dataType, false, value->getType().isBCD() ? value->getSize() : 0);
+         symRef->getSymbol()->setNotCollected();
+         isInternalPointer = false;
+         }
+      if (isInternalPointer)
+         {
+         symRef = comp->getSymRefTab()->createTemporary(methodSymbol, TR::Address, true, 0);
+         if (value->isNotCollected())
+            symRef->getSymbol()->setNotCollected();
+         else if (value->getOpCode().isArrayRef())
+            value->setIsInternalPointer(true);
+         
+         TR::AutomaticSymbol *pinningArray = NULL;
+         if (value->getOpCode().isArrayRef())
+            {
+            TR::Node *valueChild = value->getFirstChild();
+            if (valueChild->isInternalPointer() &&
+                  valueChild->getPinningArrayPointer())
+               {
+               pinningArray = valueChild->getPinningArrayPointer();
+               }
+            else
+               {
+               while (valueChild->getOpCode().isArrayRef())
+                  valueChild = valueChild->getFirstChild();
+
+               if (valueChild->getOpCode().isLoadVarDirect() &&
+                     valueChild->getSymbolReference()->getSymbol()->isAuto())
+                  {
+                  if (valueChild->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer())
+                     {
+                     pinningArray = valueChild->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer();
+                     }
+                  else
+                     {
+                     pinningArray = valueChild->getSymbolReference()->getSymbol()->castToAutoSymbol();
+                     pinningArray->setPinningArrayPointer();
+                     }
+                  }
+               else
+                  {
+                  TR::SymbolReference *newValueArrayRef = comp->getSymRefTab()->
+                                                         createTemporary(methodSymbol, TR::Address, false, 0);
+
+                  if (!newValueArrayRef->getSymbol()->isParm()) // newValueArrayRef could contain a parm symbol
+                     {
+                     pinningArray = newValueArrayRef->getSymbol()->castToAutoSymbol();
+                     pinningArray->setPinningArrayPointer();
+                     }
+                  }
+               }
+            }
+         else
+            {
+            pinningArray = value->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer();
+            }
+         symRef->getSymbol()->castToInternalPointerAutoSymbol()->setPinningArrayPointer(pinningArray);
+         if (value->isInternalPointer() && pinningArray)
+            {
+            value->setPinningArrayPointer(pinningArray);
+            } 
+         }
+      }
+   
+   if (dataType == TR::Aggregate)
+      {
+      uint32_t size = value->getSize();
+      symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(),
+                         TR::AutomaticSymbol::create(comp->trHeapMemory(),dataType,size),
+                         methodSymbol->getResolvedMethodIndex(),
+                         methodSymbol->incTempIndex(comp->fe()));
+
+
+      if (value->isNotCollected())
+         symRef->getSymbol()->setNotCollected();
+      }
+
+   if (!symRef)
+      {
+      symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(),
+                            value->getType().isBCD() ?
+                              TR::AutomaticSymbol::create(comp->trHeapMemory(),dataType,value->getSize()) :
+                              TR::AutomaticSymbol::create(comp->trHeapMemory(),dataType),
+                            methodSymbol->getResolvedMethodIndex(),
+                            methodSymbol->incTempIndex(comp->fe()));
+
+      if (value->isNotCollected())
+         symRef->getSymbol()->setNotCollected();
+      }
+   return symRef;
+   }
+
+
 TR::Block *
 OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyExceptionSuccessors, TR::ResolvedMethodSymbol *methodSymbol, bool trace)
    {
@@ -1052,15 +1168,11 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          auto entry = nodeInfo->find(node);
          if (entry == nodeInfo->end() && node->getReferenceCount() > 1)
             {
-            if (trace)
-               traceMsg(comp, "Found a node that is not in a list : n%dn : Initial reference count = %d, setting reference in the list %d\n", node->getGlobalIndex(), node->getReferenceCount(), node->getReferenceCount()-1);
             (*nodeInfo)[node] = std::make_pair<int32_t, TR::Node*>(node->getReferenceCount() - 1, NULL);
             }
          else if (entry->second.first > 1)
             {
             entry->second.first -= 1;
-            if (trace)
-               traceMsg(comp, "\tAlready have a node n%dn in a list , referenced %d time beyond this point.\n", node->getGlobalIndex(), entry->second.first);
             }
          else if (entry != nodeInfo->end())
             {
@@ -1208,13 +1320,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                   }
                else
                   {
-                  TR::AutomaticSymbol *sym = TR::AutomaticSymbol::create(comp->trHeapMemory(), value->getDataType(), value->getSize());
-                  if (value->getType() == TR::Address && value->getOpCode().hasSymbolReference() && !value->getSymbol()->isCollectedReference())
-                     sym->setNotCollected();
-                  ref = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), sym,
-                                                                           methodSymbol->getResolvedMethodIndex(),
-                                                                           methodSymbol->incTempIndex(comp->fe()));
-                  methodSymbol->addAutomatic(sym);
+                  ref = createSymRefForNode(comp, methodSymbol, value);
                   }
                TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
                TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, value);
@@ -1237,9 +1343,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                }
             else
                {
-               TR::SymbolReference *symRef = comp->getSymRefTab()->createTemporary(methodSymbol, value->getDataType());
-               if (value->getType() == TR::Address && value->getOpCode().hasSymbolReference() && !value->getSymbol()->isCollectedReference())
-                  symRef->getSymbol()->setNotCollected();
+               TR::SymbolReference *symRef = createSymRefForNode(comp, methodSymbol, value);
                iter->second.second = TR::Node::createWithSymRef(value, comp->il.opCodeForDirectLoad(value->getDataType()), 0, symRef);
                }
             }
@@ -1290,6 +1394,14 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          self()->getExit()->getNode()->addChildren(&exitGlRegDeps, 1);
          }
       replaceNodesInTrees(comp, newBlock->getEntry()->getNextTreeTop(), nodeInfo);
+      if (trace)
+         {
+         traceMsg(comp, "After replacing nodes\n");
+         for (auto iter = nodeInfo->begin(), end = nodeInfo->end(); iter != end; ++iter)
+            {
+            traceMsg(comp, "\t\t\t\t n%dn Refcount  = %d\n",iter->first->getGlobalIndex(), iter->first->getReferenceCount()); 
+            }
+         }
       }
    return newBlock;
    }
