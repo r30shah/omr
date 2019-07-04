@@ -1025,7 +1025,7 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
       }
    }
 
-static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol, TR::Node *value)
+static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol, TR::Node *value, TR::TreeTop *insertBefore)
    {
    if (value->getOpCode().hasSymbolReference() && value->getSymbolReference()->getSymbol()->isAutoOrParm())
       return value->getSymbolReference();
@@ -1091,7 +1091,9 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
                   {
                   TR::SymbolReference *newValueArrayRef = comp->getSymRefTab()->
                                                          createTemporary(methodSymbol, TR::Address, false, 0);
-
+                  TR::Node *newStore = TR::Node::createStore(newValueArrayRef, valueChild);
+                  TR::TreeTop *newStoreTree = TR::TreeTop::create(comp, newStore);
+                  insertBefore->insertBefore(newStoreTree);
                   if (!newValueArrayRef->getSymbol()->isParm()) // newValueArrayRef could contain a parm symbol
                      {
                      pinningArray = newValueArrayRef->getSymbol()->castToAutoSymbol();
@@ -1127,14 +1129,8 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
 
    if (!symRef)
       {
-      symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(),
-                            value->getType().isBCD() ?
-                              TR::AutomaticSymbol::create(comp->trHeapMemory(),dataType,value->getSize()) :
-                              TR::AutomaticSymbol::create(comp->trHeapMemory(),dataType),
-                            methodSymbol->getResolvedMethodIndex(),
-                            methodSymbol->incTempIndex(comp->fe()));
-
-      if (value->isNotCollected())
+      symRef = comp->getSymRefTab()->createTemporary(methodSymbol, value->getDataType());
+      if (value->getType() == TR::Address && value->isNotCollected())
          symRef->getSymbol()->setNotCollected();
       }
    return symRef;
@@ -1310,41 +1306,42 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          // if we don't know where we will put the value try to allocate a register otherwise use a temp
          if (!iter->second.second)
             {
-            std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> regInfo = findAvailableRegister(comp, iter->first, unavailableRegisters);
-            if (regInfo.first > -1)
+            TR::SymbolReference *ref = value->getOpCode().isLoadReg() ? value->getRegLoadStoreSymbolReference() : createSymRefForNode(comp, methodSymbol, value, self()->getExit());
+            if (!ref->getSymbol()->isInternalPointer() || value->getOpCode().isLoadReg())
                {
-               TR::SymbolReference *ref = NULL;
-               if (value->getOpCode().isLoadReg())
+               std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> regInfo = findAvailableRegister(comp, iter->first, unavailableRegisters);
+               if (regInfo.first > -1)
                   {
-                  ref = value->getRegLoadStoreSymbolReference();
+                  TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
+                  TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, value);
+                  self()->getExit()->insertBefore(TR::TreeTop::create(comp, regStore));
+                  regStore->setRegLoadStoreSymbolReference(ref);
+                  regLoad->setRegLoadStoreSymbolReference(ref);
+                  if (regInfo.second > -1)
+                     {
+                     regLoad->setLowGlobalRegisterNumber(regInfo.first);
+                     regLoad->setHighGlobalRegisterNumber(regInfo.second);
+                     regStore->setLowGlobalRegisterNumber(regInfo.first);
+                     regStore->setHighGlobalRegisterNumber(regInfo.second);
+                     }
+                  else
+                     {
+                     regLoad->setGlobalRegisterNumber(regInfo.first);
+                     regStore->setGlobalRegisterNumber(regInfo.first);
+                     }
+                  iter->second.second = regLoad;
                   }
-               else
-                  {
-                  ref = createSymRefForNode(comp, methodSymbol, value);
-                  }
-               TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
-               TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, value);
-               self()->getExit()->insertBefore(TR::TreeTop::create(comp, regStore));
-               regStore->setRegLoadStoreSymbolReference(ref);
-               regLoad->setRegLoadStoreSymbolReference(ref);
-               if (regInfo.second > -1)
-                  {
-                  regLoad->setLowGlobalRegisterNumber(regInfo.first);
-                  regLoad->setHighGlobalRegisterNumber(regInfo.second);
-                  regStore->setLowGlobalRegisterNumber(regInfo.first);
-                  regStore->setHighGlobalRegisterNumber(regInfo.second);
-                  }
-               else
-                  {
-                  regLoad->setGlobalRegisterNumber(regInfo.first);
-                  regStore->setGlobalRegisterNumber(regInfo.first);
-                  }
-               iter->second.second = regLoad;
                }
-            else
+            if (!iter->second.second)
                {
-               TR::SymbolReference *symRef = createSymRefForNode(comp, methodSymbol, value);
-               iter->second.second = TR::Node::createWithSymRef(value, comp->il.opCodeForDirectLoad(value->getDataType()), 0, symRef);
+               /*
+               if (ref->getSymbol()->isInternalPointer())
+                  {
+                     TR::SymbolReference *nodeRef = NULL;
+                     value->createStoresForVar(nodeRef, self()->getExit());
+                  }
+               */
+               iter->second.second = TR::Node::createWithSymRef(value, comp->il.opCodeForDirectLoad(value->getDataType()), 0, ref);
                }
             }
          TR::Node *replacement = iter->second.second;
