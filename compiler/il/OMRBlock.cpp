@@ -958,7 +958,8 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                   {
                   needToCreateRegStore = false;
                   }
-               else
+               // Even if node is stored into register before split point, we should check if register is available.
+               else if (checkIfRegisterIsAvailable(comp, storeRegNodeInfoEntry->second, unavailableRegisters))
                   {
                   TR::Node *storeNode = storeRegNodeInfoEntry->second;
                   // Whether the PassThrough uses same register or not, use the last recorded regStore to assign register to the node.
@@ -974,6 +975,10 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                   nodeInfoEntry->second.second = regLoad;
                   // We know there is no regStore encountered for this node after split point, no need to check it.
                   needToCheckStoreRegPostSplitPoint = false;
+                  }
+               else
+                  {
+                  needToCreateRegStore = false;
                   }
                }
             // Now we need to either replace a PassThrough node with regLoad or add a treetop before.
