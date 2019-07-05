@@ -954,31 +954,33 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
 
                auto storeRegNodeInfoEntry = storeNodeInfo->find(value);
                // If regStore post split point was using a register that is unavailable, Do nothing. 
+               // We should have encounter a node under passthrough with associated regStore after split point and chose to use the information 
+               // Depending on the register availability and if we do not have register available, we should not do anything.
                if (storeRegNodeInfoEntry == storeNodeInfo->end() && checkStoreRegNodeListForNode(dep, storeRegNodePostSplitPoint))
                   {
                   needToCreateRegStore = false;
                   }
                // Even if node is stored into register before split point, we should check if register is available.
-               else if (checkIfRegisterIsAvailable(comp, storeRegNodeInfoEntry->second, unavailableRegisters))
-                  {
-                  TR::Node *storeNode = storeRegNodeInfoEntry->second;
-                  // Whether the PassThrough uses same register or not, use the last recorded regStore to assign register to the node.
-                  TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
-                  regLoad->setRegLoadStoreSymbolReference(storeNode->getRegLoadStoreSymbolReference());
-                  regLoad->setGlobalRegisterNumber(storeNode->getGlobalRegisterNumber());
-                  unavailableRegisters.set(storeNode->getGlobalRegisterNumber());
-                  if (value->requiresRegisterPair(comp))
-                     {
-                     regLoad->setHighGlobalRegisterNumber(storeNode->getHighGlobalRegisterNumber());
-                     unavailableRegisters.set(storeNode->getHighGlobalRegisterNumber());
-                     }
-                  nodeInfoEntry->second.second = regLoad;
-                  // We know there is no regStore encountered for this node after split point, no need to check it.
-                  needToCheckStoreRegPostSplitPoint = false;
-                  }
                else
                   {
-                  needToCreateRegStore = false;
+                  TR_ASSERT_FATAL (storeRegNodeInfoEntry != storeNodeInfo->end(), "Only possible condition we can come here is to have regStore that is used post split point");
+                  TR::Node *storeNode = storeRegNodeInfoEntry->second;
+                  if (checkIfRegisterIsAvailable(comp, storeNode, unavailableRegisters))
+                     {
+                     // Whether the PassThrough uses same register or not, use the last recorded regStore to assign register to the node.
+                     TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
+                     regLoad->setRegLoadStoreSymbolReference(storeNode->getRegLoadStoreSymbolReference());
+                     regLoad->setGlobalRegisterNumber(storeNode->getGlobalRegisterNumber());
+                     unavailableRegisters.set(storeNode->getGlobalRegisterNumber());
+                     if (value->requiresRegisterPair(comp))
+                        {
+                        regLoad->setHighGlobalRegisterNumber(storeNode->getHighGlobalRegisterNumber());
+                        unavailableRegisters.set(storeNode->getHighGlobalRegisterNumber());
+                        }
+                     nodeInfoEntry->second.second = regLoad;
+                     // We know there is no regStore encountered for this node after split point, no need to check it.
+                     needToCheckStoreRegPostSplitPoint = false;
+                     }
                   }
                }
             // Now we need to either replace a PassThrough node with regLoad or add a treetop before.
@@ -994,13 +996,15 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
             else if (needToCreateRegStore && (!needToCheckStoreRegPostSplitPoint || !checkStoreRegNodeListForNode(dep, storeRegNodePostSplitPoint)))
                {
                // We need to store a node into a used register before currentTT
-               TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, nodeInfoEntry->second.second);
+               // If we have replacement then need to store the replacement to register, else, value needs to be stored. 
+               TR::Node *nodeToBeStored = nodeInfoEntry->second.second != NULL ? nodeInfoEntry->second.second : value;
+               TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, nodeToBeStored);
                currentTT->insertBefore(TR::TreeTop::create(comp, regStore));
                regStore->setGlobalRegisterNumber(dep->getGlobalRegisterNumber());
-               if (nodeInfoEntry->second.second->requiresRegisterPair(comp))
+               if (nodeToBeStored->requiresRegisterPair(comp))
                   regStore->setHighGlobalRegisterNumber(dep->getHighGlobalRegisterNumber());
                TR::SymbolReference *ref = NULL;
-               if (nodeInfoEntry->second.second->getOpCode().isLoadConst() || nodeInfoEntry->second.second->getOpCodeValue() == TR::loadaddr)
+               if (nodeToBeStored->getOpCode().isLoadConst() || nodeToBeStored->getOpCodeValue() == TR::loadaddr || nodeInfoEntry->second.second == NULL)
                   {
                   // See if we have stored constants in register before split point.
                   auto storeRegNodeInfoEntry = storeNodeInfo->find(value);
@@ -1015,10 +1019,10 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                   }
                else
                   {
-                  ref = nodeInfoEntry->second.second->getRegLoadStoreSymbolReference();
+                  ref = nodeToBeStored->getRegLoadStoreSymbolReference();
                   }
                regStore->setRegLoadStoreSymbolReference(ref);
-               dep->setAndIncChild(0, nodeInfoEntry->second.second);
+               dep->setAndIncChild(0, nodeToBeStored);
                value->decReferenceCount();
                }
             }
@@ -1382,6 +1386,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          for (TR::Node *dep = entryIter.getCurrent(); dep; dep=entryIter.getNext())
             {
             entryGlRegDeps->setAndIncChild(childIdx++, dep);
+            traceMsg(comp, "n%dn RegLoad, Child = %d\n", dep->getGlobalIndex(), dep->getNumChildren());
             }
 
          ListIterator<TR::Node> exitIter(&exitDeps);
