@@ -950,19 +950,16 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
             bool needToCreateRegStore = true;
             if (nodeInfoEntry->second.second == NULL)
                {
-               // We either encounter a regStore post split point but register was unavailable or did not encounter a regStore post split point that stores node into register.
-
                auto storeRegNodeInfoEntry = storeNodeInfo->find(value);
-               // If regStore post split point was using a register that is unavailable, Do nothing. 
-               // We should have encounter a node under passthrough with associated regStore after split point and chose to use the information 
-               // Depending on the register availability and if we do not have register available, we should not do anything.
                if (storeRegNodeInfoEntry == storeNodeInfo->end() && checkStoreRegNodeListForNode(dep, storeRegNodePostSplitPoint))
                   {
+                  // Node under pass through has corresponding regStore after split point but registers were unavailable then nothing needs to be done. 
                   needToCreateRegStore = false;
                   }
-               // Even if node is stored into register before split point, we should check if register is available.
                else
                   {
+                  // Node under passthrough is stored into some set of registers (Not necessarily same set of registers as we only record last regStore for the node)
+                  // and if those set of registers are available, then use them to create a replacement.
                   TR_ASSERT_FATAL (storeRegNodeInfoEntry != storeNodeInfo->end(), "Only possible condition we can come here is to have regStore that is used post split point");
                   TR::Node *storeNode = storeRegNodeInfoEntry->second;
                   if (checkIfRegisterIsAvailable(comp, storeNode, unavailableRegisters))
@@ -983,19 +980,18 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                      }
                   }
                }
-            // Now we need to either replace a PassThrough node with regLoad or add a treetop before.
+   
+            
             if (nodeInfoEntry->second.second != NULL && nodeInfoEntry->second.second->getOpCode().isLoadReg() && 
                dep->getLowGlobalRegisterNumber() == nodeInfoEntry->second.second->getLowGlobalRegisterNumber() && 
                dep->getHighGlobalRegisterNumber() == nodeInfoEntry->second.second->getHighGlobalRegisterNumber())
                {
-               // PassThrough uses same register, which should already mark as unavailable. Replace that with regLoad for sanity
-               // regDeps->setAndIncChild(i, nodeInfoEntry->second.second);
-               // value->decReferenceCount();
-               // dep->decReferenceCount();
+               // Passthrough uses same register as the replacement, do not need to do anything
                }
             else if (needToCreateRegStore && (!needToCheckStoreRegPostSplitPoint || !checkStoreRegNodeListForNode(dep, storeRegNodePostSplitPoint)))
                {
-               // We need to store a node into a used register before currentTT
+               // We have either used different register for replacement to value node after split point or Passthrough has corresponding regStore before spilt point, but registers were unavailable.
+               // In these cases we need to create a regStore for the PassThrough.
                // If we have replacement then need to store the replacement to register, else, value needs to be stored. 
                TR::Node *nodeToBeStored = nodeInfoEntry->second.second != NULL ? nodeInfoEntry->second.second : value;
                TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, nodeToBeStored);
@@ -1014,7 +1010,7 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                      }
                   else 
                      {
-                     TR_ASSERT_FATAL(false, "We have a constant node under PassThrough and we did not find a regStore that is useing the info.");
+                     TR_ASSERT_FATAL(false, "We have a node under PassThrough and we did not find a regStore that is using the info.");
                      }
                   }
                else
