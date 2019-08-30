@@ -652,6 +652,8 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
       self()->setFirstGlobalFPR(self()->machine()->getFirstGlobalFPRRegisterNumber());
       self()->setLastGlobalFPR(self()->machine()->getLastGlobalFPRRegisterNumber());
+      self()->setFirstNotUsableGlobalGPR(self()->machine()->getFirstNotUsableGlobalGPRRegisterNumber());
+      self()->setLastNotUsableGlobalGPR(self()->machine()->getLastNotUsableGlobalGPRRegisterNumber());
 
       self()->setFirstGlobalVRF(self()->machine()->getFirstGlobalVRFRegisterNumber());
       self()->setLastGlobalVRF(self()->machine()->getLastGlobalVRFRegisterNumber());

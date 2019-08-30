@@ -3808,6 +3808,22 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       p = self()->addGlobalRegLater(TR::RealRegister::GPR7, p);
 
    self()->setLastGlobalGPRRegisterNumber(p-1);
+   bool foundNotUsableFirst = false;
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; i++)
+      {
+      auto regNum = static_cast<TR::RealRegister::RegNum>(i);
+      if (!linkage->getPreserved(regNum))
+         {
+         p = self()->addGlobalReg(regNum, p);
+         if (!foundNotUsableFirst && (p-1) != self()->getLastGlobalGPRRegisterNumber())
+            {
+            foundNotUsableFirst = true;
+            self()->setFirstNotUsableGlobalGPRRegisterNumber(p-1);
+            }
+         }
+      }
+   self()->setLastNotUsableGlobalGPRRegisterNumber(p-1);
+
 
    // Volatiles that aren't linkage regs
    //
@@ -3997,6 +4013,18 @@ TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
    return _lastGlobalGPRRegisterNumber = reg;
+   }
+
+TR_GlobalRegisterNumber
+OMR::Z::Machine::setFirstNotUsableGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
+   {
+   return _firstNotUsableGlobalGPRRegisterNumber = reg;
+   }
+
+TR_GlobalRegisterNumber
+OMR::Z::Machine::setLastNotUsableGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
+   {
+   return _lastNotUsableGlobalGPRRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber

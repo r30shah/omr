@@ -913,6 +913,10 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GlobalRegisterNumber setFirstGlobalFPR(TR_GlobalRegisterNumber n) {return (_firstGlobalFPR = n);}
    TR_GlobalRegisterNumber getLastGlobalFPR() {return _lastGlobalFPR;}
    TR_GlobalRegisterNumber setLastGlobalFPR(TR_GlobalRegisterNumber n)  {return (_lastGlobalFPR = n);}
+   TR_GlobalRegisterNumber getFirstNotUsableGlobalGPR() {return _firstNotUsableGlobalGPR;}
+   TR_GlobalRegisterNumber setFirstNotUsableGlobalGPR(TR_GlobalRegisterNumber n) {return (_firstNotUsableGlobalGPR = n);}
+   TR_GlobalRegisterNumber getLastNotUsableGlobalGPR() {return _lastNotUsableGlobalGPR;}
+   TR_GlobalRegisterNumber setLastNotUsableGlobalGPR(TR_GlobalRegisterNumber n) {return (_lastNotUsableGlobalGPR = n);}
 
    TR_GlobalRegisterNumber getFirstOverlappedGlobalFPR()                          { return _firstOverlappedGlobalFPR    ;}
    TR_GlobalRegisterNumber setFirstOverlappedGlobalFPR(TR_GlobalRegisterNumber n) { return _firstOverlappedGlobalFPR = n;}
@@ -1899,6 +1903,8 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_RegisterMask _liveRealRegisters[NumRegisterKinds];
    TR_GlobalRegisterNumber _lastGlobalGPR;
+   TR_GlobalRegisterNumber _firstNotUsableGlobalGPR;
+   TR_GlobalRegisterNumber _lastNotUsableGlobalGPR;
    TR_GlobalRegisterNumber _firstGlobalFPR;
    TR_GlobalRegisterNumber _lastGlobalFPR;
    TR_GlobalRegisterNumber _firstOverlappedGlobalFPR;
