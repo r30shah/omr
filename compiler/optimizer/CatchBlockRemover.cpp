@@ -29,6 +29,7 @@
 #include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "infra/Cfg.hpp"
@@ -83,7 +84,15 @@ int32_t TR_CatchBlockRemover::perform()
       TR::TreeTop *treeTop;
       for (treeTop = block->getEntry(); treeTop != block->getExit(); treeTop = treeTop->getNextTreeTop())
          {
-         reachedExceptions |= treeTop->getNode()->exceptionsRaised();
+			if (treeTop->getNode()->getOpCodeValue() == TR::treetop && treeTop->getNode()->getChild(0)->getOpCode().isCall() && treeTop->getNode()->getChild(0)->getSymbol()->castToMethodSymbol()->getRecognizedMethod() == TR::java_nio_Bits_keepAlive)
+				{
+				traceMsg(comp(), "n%dn Exception Raised = %s\n",treeTop->getNode()->getChild(0)->getGlobalIndex(), treeTop->getNode()->getChild(0)->exceptionsRaised() ? "true":"false");
+				reachedExceptions |= 0;
+				}
+			else
+				{
+         	reachedExceptions |= treeTop->getNode()->exceptionsRaised();
+				}
 
          if (treeTop->getNode()->getOpCodeValue() == TR::monexitfence) // for live monitor metadata
             reachedExceptions |= TR::Block::CanCatchMonitorExit;
