@@ -3667,7 +3667,7 @@ OMR::Node::exceptionsRaised()
          break;
 #endif
       default:
-       if (node->getOpCode().isCall() && !node->isOSRFearPointHelperCall())
+       if (node->getOpCode().isCall() && !node->isOSRFearPointHelperCall() && !node->isPureCall())
             {
             possibleExceptions |= TR::Block::CanCatchOSR;
             if (node->getSymbolReference()->canGCandExcept()
