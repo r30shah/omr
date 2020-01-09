@@ -3677,11 +3677,11 @@ OMR::Node::exceptionsRaised()
          break;
 #endif
       default:
-       if (node->getOpCode().isCall() && !node->isOSRFearPointHelperCall() && !node->isPureCall())
+       if (node->getOpCode().isCall() && !node->isOSRFearPointHelperCall())
             {
-            possibleExceptions |= TR::Block::CanCatchOSR;
-            if (node->getSymbolReference()->canGCandExcept()
-               )
+            if (!((TR::MethodSymbol*)node->getSymbolReference()->getSymbol())->functionCallDoesNotYieldOSR())
+               possibleExceptions |= TR::Block::CanCatchOSR;
+            if (!node->isPureCall() && node->getSymbolReference()->canGCandExcept())
                possibleExceptions |= TR::Block::CanCatchUserThrows;
             }
          break;
