@@ -194,6 +194,7 @@ public:
    bool safeToSkipZeroInitializationOnNewarrays() { return false; }
    bool safeToSkipChecksOnArrayCopies() { return false; }
 
+   bool functionCallDoesNotYieldOSR() { return false; }
    bool isPureFunction() { return false; }
 
 protected:
