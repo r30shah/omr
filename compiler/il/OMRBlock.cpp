@@ -1038,25 +1038,28 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                   {
                   // Node under passthrough is stored into some set of registers (Not necessarily same set of registers as we only record last regStore for the node)
                   // and if those set of registers are available, then use them to create a replacement.
-                  TR_ASSERT_FATAL (storeRegNodeInfoEntry != storeNodeInfo->end(), "We should have a regStore pre split point that can be used to allocate register for replacement node");
-                  TR::Node *storeNode = storeRegNodeInfoEntry->second;
-                  if (checkIfRegisterIsAvailable(comp, storeNode, unavailableRegisters))
+                  TR_ASSERT (storeRegNodeInfoEntry != storeNodeInfo->end(), "We should have a regStore pre split point that can be used to allocate register for replacement node");
+                  if (storeRegNodeInfoEntry != storeNodeInfo->end())
                      {
-                     // Whether the PassThrough uses same register or not, use the last recorded regStore to assign register to the node.
-                     TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
-                     regLoad->setRegLoadStoreSymbolReference(storeNode->getRegLoadStoreSymbolReference());
-                     regLoad->setGlobalRegisterNumber(storeNode->getGlobalRegisterNumber());
-                     unavailableRegisters.set(storeNode->getGlobalRegisterNumber());
-                     if (value->requiresRegisterPair(comp))
+                     TR::Node *storeNode = storeRegNodeInfoEntry->second;
+                     if (checkIfRegisterIsAvailable(comp, storeNode, unavailableRegisters))
                         {
-                        regLoad->setHighGlobalRegisterNumber(storeNode->getHighGlobalRegisterNumber());
-                        unavailableRegisters.set(storeNode->getHighGlobalRegisterNumber());
+                        // Whether the PassThrough uses same register or not, use the last recorded regStore to assign register to the node.
+                        TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
+                        regLoad->setRegLoadStoreSymbolReference(storeNode->getRegLoadStoreSymbolReference());
+                        regLoad->setGlobalRegisterNumber(storeNode->getGlobalRegisterNumber());
+                        unavailableRegisters.set(storeNode->getGlobalRegisterNumber());
+                        if (value->requiresRegisterPair(comp))
+                           {
+                           regLoad->setHighGlobalRegisterNumber(storeNode->getHighGlobalRegisterNumber());
+                           unavailableRegisters.set(storeNode->getHighGlobalRegisterNumber());
+                           }
+                        nodeInfoEntry->second.second = regLoad;
+                        // Course of action to analyze reg store for block splitter is to check for the registers used for the node post split point before
+                        // we check the regStore information pre split point. As regStore post split point is most likely to be used later. This will reduce number of shuffles.
+                        // So if we get the candidate from before split point, we do not need to check list of RegStores post split point.
+                        needToCheckStoreRegPostSplitPoint = false;
                         }
-                     nodeInfoEntry->second.second = regLoad;
-                     // Course of action to analyze reg store for block splitter is to check for the registers used for the node post split point before
-                     // we check the regStore information pre split point. As regStore post split point is most likely to be used later. This will reduce number of shuffles.
-                     // So if we get the candidate from before split point, we do not need to check list of RegStores post split point.
-                     needToCheckStoreRegPostSplitPoint = false;
                      }
                   }
                }
