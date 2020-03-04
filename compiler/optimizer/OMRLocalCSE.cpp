@@ -162,11 +162,11 @@ int32_t OMR::LocalCSE::perform()
       if (doExtraPassForVolatiles())
          {
          if (trace())
-            traceMsg(comp(), "LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
+            traceMsg(comp(), "LocalCSE entering pass mode for volatile elimination - pass 1 for volatiles ONLY - PASS1: Starting node = n%dn ending node = n%dn\n", tt->getNode()->getGlobalIndex(), exitTreeTop->getNode()->getGlobalIndex());
          _volatileState = VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          if (trace())
-            traceMsg(comp(), "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
+            traceMsg(comp(), "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY - PASS2: Starting node = n%dn ending node = n%dn\n", tt->getNode()->getGlobalIndex(), exitTreeTop->getNode()->getGlobalIndex());
          _volatileState = NON_VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          }
@@ -413,7 +413,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    vcount_t visitCount = comp()->getVisitCount();
 
    if (trace())
-     traceMsg(comp(), "Examining node %p\n",node);
+     traceMsg(comp(), "\tExamining node n%dn parent node n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex():-1);
 
    if (!isFirstReferenceToNode(parent, childNum, node, visitCount))
       {
@@ -489,6 +489,14 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    // but if any symbol is unavailable, then it is impossible for the node
    // to be available.
    //
+   if (trace())
+      {
+      traceMsg(comp(), "\t\t\tFor Node n%dn Parent n%dn first time commoning is not done.\n", node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex() : -1);
+      traceMsg(comp(), "\t\t\t\tdoneCopyPropagation = %s\n", doneCopyPropagation ? "true" : "false");
+      traceMsg(comp(), "\t\t\t\tnode is NULL Check and isAvailableNullCheck = %s\n", (node->getOpCodeValue() == TR::NULLCHK && isAvailableNullCheck(node, seenAvailableLoadedSymbolReferences)) ? "true" : "false");
+      traceMsg(comp(), "\t\t\t\tcanBeAvailable = %s\n",canBeAvailable(parent, node, seenAvailableLoadedSymbolReferences, nodeCanBeAvailable) ? "true":"false");
+      traceMsg(comp(), "\t\t\t\tloadaddrAsLoad = %s, nodeIsLoadAddr = %s, condition = %s\n", _loadaddrAsLoad ? "true" : "false", node->getOpCodeValue() == TR::loadaddr ? "true" : "false", !_loadaddrAsLoad && node->getOpCodeValue() == TR::loadaddr ? "true" : "false");
+      }
    if (!doneCopyPropagation &&
        (((node->getOpCodeValue() == TR::NULLCHK) && (isAvailableNullCheck(node, seenAvailableLoadedSymbolReferences))) ||
          (canBeAvailable(parent, node, seenAvailableLoadedSymbolReferences, nodeCanBeAvailable))
@@ -496,7 +504,6 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
      {
      doCommoningIfAvailable(node, parent, childNum, doneCommoning);
      }
-
    // Code below deals with how the availability and copy propagation
    // information is updated once this node is seen
    //
@@ -738,7 +745,7 @@ void OMR::LocalCSE::doCommoningAgainIfPreviouslyCommoned(TR::Node *node, TR::Nod
       //
       if (_replacedNodesAsArray[i] == node &&
           shouldCommonNode(parent, node) &&
-          performTransformation(comp(), "%s   Local Common Subexpression Elimination commoning node : %p again\n", optDetailString(), node))
+          performTransformation(comp(), "%s   Local Common Subexpression Elimination commoning node : %p (node = n%dn parent = n%dn\n) again\n", optDetailString(), node, node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex() : -1))
          {
          TR::Node *replacingNode = _replacedNodesByAsArray[i];
          parent->setChild(childNum, replacingNode);
@@ -772,18 +779,23 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
    // no available expression was found to match this one.
    //
    TR::Node *availableExpression = getAvailableExpression(parent, node);
-
+   if (trace())
+      {
+      traceMsg(comp(),"\t\tIn doCommoningIfAvailable for node n%dn, parent n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex():-1);
+      traceMsg(comp(),"\t\t\tavailableExpression = n%dn\n", availableExpression != NULL ? availableExpression->getGlobalIndex():-1);
+      traceMsg(comp(),"\t\t\tshouldCommonNode = %s\n", shouldCommonNode(parent, node)? "true": "false");
+      }
    if (availableExpression && (availableExpression != node) &&
        shouldCommonNode(parent, node) &&
-       performTransformation(comp(), "%s   Local Common Subexpression Elimination commoning node : %p by available node : %p\n", optDetailString(), node, availableExpression))
+       performTransformation(comp(), "%s   Local Common Subexpression Elimination commoning node : %p (node = n%dn , parent = n%dn) by available node : %p\n", optDetailString(), node, node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex() : -1, availableExpression))
       {
       if (!node->getOpCode().hasSymbolReference() ||
           (_volatileState == VOLATILE_ONLY && node->getSymbol()->isVolatile()) ||
           (_volatileState != VOLATILE_ONLY))
          {
          TR_ASSERT(_curBlock, "_curBlock should be non-null\n");
-
-
+         if (trace())         
+            traceMsg(comp(),"\t\t\t\tIn first IF which should do the commoning of node n%dn, parent n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex():-1);
          requestOpt(OMR::treeSimplification, true, _curBlock);
          requestOpt(OMR::localReordering, true, _curBlock);
 
@@ -974,6 +986,8 @@ bool OMR::LocalCSE::doCopyPropagationIfPossible(TR::Node *node, TR::Node *parent
 //
 void OMR::LocalCSE::makeNodeAvailableForCommoning(TR::Node *parent, TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, bool *canBeAvailable)
    {
+   if (trace())
+      traceMsg(comp(),"\t\t\tIn makeNodeAvailableForCommoning Node = n%dn Parent = n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex(): -1);
    if (parent &&
        (parent->getOpCodeValue() == TR::Prefetch) &&
        (parent->getFirstChild() == node))
@@ -1295,7 +1309,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
 
    if (trace())
       {
-      traceMsg(comp(), "In getAvailableExpression _availableCallExprs = ");
+      traceMsg(comp(), "In getAvailableExpression For Node = n%dn, parent n%dn _availableCallExprs = ", node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex():-1);
       _availableCallExprs.print(comp());
       traceMsg(comp(),"\n");
       }
@@ -1304,26 +1318,47 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
    if (node->getOpCode().hasSymbolReference() && ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
       {
       if (node->getOpCode().isCall())
+         {
+         if (trace())
+            traceMsg(comp(),"\t\tHashTable set to hashTableWithCalls\n");
          hashTable = _hashTableWithCalls;
+         }
       else
+         {
+         if (trace())
+            traceMsg(comp(),"\t\tHashTable set to hashTableWithSyms\n");
          hashTable = _hashTableWithSyms;
+         }
       }
    else if (node->getOpCode().isLoadConst())
+      {
+      if (trace())
+         traceMsg(comp(),"\t\tHashTable set to hashTableWithConsts\n");
       hashTable = _hashTableWithConsts;
+      }
    else
+      {
+      if (trace())
+         traceMsg(comp(),"\t\tHashTable set to hashTable default\n");
       hashTable = _hashTable;
+      }
 
    int32_t hashValue = hash(parent, node);
+   if (trace())
+      traceMsg(comp(),"\t\t\thashValue For node = %d, looking into hashTable = %p\n",hashValue, hashTable);
    auto range = hashTable->equal_range(hashValue);
 
    for(auto it = range.first; it != range.second;)
       {
       TR::Node *other = it->second;
+      if (trace())
+         traceMsg(comp(),"\t\t\tFrom the HashTable Checking Node n%dn\n",other->getGlobalIndex());
+
       bool remove = false;
       if (areSyntacticallyEquivalent(other, node, &remove))
          {
          if (trace())
-            traceMsg(comp(), "node %p is syntactically equivalent to other %p\n",node,other);
+            traceMsg(comp(), "node n%dn is syntactically equivalent to other n%dn\n",node->getGlobalIndex(),other->getGlobalIndex());
          return other;
          }
 
@@ -1650,6 +1685,8 @@ int32_t OMR::LocalCSE::hash(TR::Node *parent, TR::Node *node)
 
 void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
    {
+   if (trace())
+      traceMsg(comp(),"\t\t\tIn addToHashTable Node = n%dn hashValue = %d\n",node->getGlobalIndex(), hashValue);
    if (node->getOpCode().isStore() ||
        (node->getOpCode().isVoid() && (node->getOpCodeValue() != TR::PassThrough)))
       return;
@@ -1658,6 +1695,8 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
        !_relevantNodes.get(node->getSymbolReference()->getReferenceNumber()))
       return;
 
+   if (trace())
+      traceMsg(comp(),"\t\t\t\tWill Add node Node = n%dn to hashtable\n",node->getGlobalIndex());
    int32_t numChildren = node->getNumChildren();
    for (int32_t i = numChildren-1; i >= 0; i--)
       {
@@ -1680,19 +1719,39 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
       {
       if (node->getOpCode().isCall())
          {
+         if (trace())
+            traceMsg(comp(),"\t\t\t\tWill Add node to hashtableWithCalls\n");
          _hashTableWithCalls->insert(pair);
          _availableCallExprs.set(node->getSymbolReference()->getReferenceNumber());
          }
       else
          {
+         if (trace())
+            traceMsg(comp(),"\t\t\t\tWill Add node Node to hashtableWithhSyms %p\n",_hashTableWithSyms);
          _hashTableWithSyms->insert(pair);
+         auto range = _hashTableWithSyms->equal_range(hashValue);
+         if (trace())
+            traceMsg(comp(),"\t\t\t\tDumping the content of the map for hashValue %d\n",hashValue);
+         for (auto it = range.first; it != range.second; ++it)
+            {
+            if (trace())
+               traceMsg(comp(),"\t\t\t\t\tn%dn\n",it->second->getGlobalIndex());
+            }
          _availableLoadExprs.set(node->getSymbolReference()->getReferenceNumber());
          }
       }
    else if (node->getOpCode().isLoadConst())
+      {
+      if (trace())
+         traceMsg(comp(),"\t\t\t\tWill Add node Node to hashtableWothConsts\n",node->getGlobalIndex());
       _hashTableWithConsts->insert(pair);
+      }
    else
+      {
+      if (trace())
+         traceMsg(comp(),"\t\t\t\tWill Add node Node to hashtable default\n",node->getGlobalIndex());
       _hashTable->insert(pair);
+      }
    }
 
 
