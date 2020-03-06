@@ -902,6 +902,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
                }
             }
          }
+      /*
       else
          {
          if ((parent != NULL || !node->getOpCode().isResolveOrNullCheck()) &&
@@ -919,6 +920,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
             traceMsg(comp(), "Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
          _simulatedNodesAsArray[node->getGlobalIndex()] = availableExpression;
          }
+      */
       }
    }
 
