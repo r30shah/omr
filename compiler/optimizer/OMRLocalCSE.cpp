@@ -1757,6 +1757,8 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
 
 void OMR::LocalCSE::removeFromHashTable(HashTable *hashTable, int32_t hashValue)
    {
+   if (trace())
+      traceMsg(comp(),"RAHIL:Removing Entries for the hashValue %d in hashTable %p\n",hashValue, hashTable);
    auto range = hashTable->equal_range(hashValue);
    hashTable->erase(range.first, range.second);
    }
