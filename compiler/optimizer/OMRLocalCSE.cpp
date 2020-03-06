@@ -1377,7 +1377,8 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
          ++it;
          }
       }
-
+   if (trace())
+      traceMsg(comp(),"RAHIL1:Can not find node in hashTable.\n");
    if (node->hasPinningArrayPointer() &&
        node->computeIsInternalPointer() &&
        cg()->supportsInternalPointers() &&
