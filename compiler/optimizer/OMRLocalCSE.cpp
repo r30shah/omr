@@ -413,7 +413,10 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    vcount_t visitCount = comp()->getVisitCount();
 
    if (trace())
-     traceMsg(comp(), "\tExamining node n%dn parent node n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex():-1);
+      {
+      traceMsg(comp(), "\tExamining node n%dn parent node n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex():-1);
+      traceMsg(comp(),"\t\tBefore examining the node, size of hashTable = %d\n",_hashTableWithSyms->size());
+      }
 
    if (!isFirstReferenceToNode(parent, childNum, node, visitCount))
       {
