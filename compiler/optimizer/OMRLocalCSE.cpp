@@ -1519,6 +1519,8 @@ void OMR::LocalCSE::killAvailableExpressionsUsingBitVector(HashTable *hashTable,
       auto range = hashTable->equal_range(nextSymRefNum);
       if (range.first != range.second)
          {
+         if (trace())
+            traceMsg(comp(),"Deleting All the entries from hashTable %p for hashValue =%d\n",nextSymRefNum);
          auto lastItem = range.second;
          --lastItem;
          _killedNodes.set(lastItem->second->getGlobalIndex());
