@@ -127,7 +127,6 @@ OMR::Block::init(TR::TreeTop *entry, TR::TreeTop *exit)
    _pEntry = entry;
    _pExit = exit;
    _pStructureOf = NULL;
-   _liveLocals = NULL;
    _globalRegisters = 0;
    _catchBlockExtension = NULL;
    _firstInstruction = NULL;
@@ -1085,11 +1084,15 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                TR::SymbolReference *ref = NULL;
                if (nodeToBeStored->getOpCode().isLoadConst() || nodeToBeStored->getOpCodeValue() == TR::loadaddr || nodeInfoEntry->second.second == NULL)
                   {
+                  
                   // See if we have stored constants in register before split point.
                   auto storeRegNodeInfoEntry = storeNodeInfo->find(value);
-                  TR_ASSERT_FATAL(storeRegNodeInfoEntry != storeNodeInfo->end(),
+                  TR_ASSERT(storeRegNodeInfoEntry != storeNodeInfo->end(),
                      "We have a node n%dn under PassThrough node n%dn but we did not find a regStore that is using the info.", value->getGlobalIndex(), dep->getGlobalIndex());
-                  ref = storeRegNodeInfoEntry->second->getRegLoadStoreSymbolReference();
+                  if (storeRegNodeInfoEntry != storeNodeInfo->end())                  
+                     ref = storeRegNodeInfoEntry->second->getRegLoadStoreSymbolReference();
+                  else
+                     ref = createSymRefForNode(comp, comp->getMethodSymbol(), nodeToBeStored, currentTT);
                   }
                else
                   {
