@@ -510,12 +510,20 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    // Code below deals with how the availability and copy propagation
    // information is updated once this node is seen
    //
+   if (trace())
+      {
+      traceMsg(comp(),"\t\tRAHIL: After commonning routines, size of hashTable = %d\n",_hashTableWithSyms->size());
+      }
    TR_UseDefAliasSetInterface UseDefAliases = node->mayKill(true);
    bool hasAliases = !UseDefAliases.isZero(comp());
    bool alreadyKilledAtVolatileLoad = false;
    if (hasAliases && !doneCommoning)
       alreadyKilledAtVolatileLoad = killExpressionsIfVolatileLoad(node, seenAvailableLoadedSymbolReferences, UseDefAliases);
 
+   if (trace())
+      {
+      traceMsg(comp(),"\t\tRAHIL: After Killing Expressions if called, size of hashTable = %d\n",_hashTableWithSyms->size());
+      }
    // Step 1 : add this node to the data structures so that it can be considered for commoning
    //
    if (!(doneCommoning || doneCopyPropagation))
@@ -525,6 +533,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
 
    if (trace())
       {
+      traceMsg(comp(),"\t\tRAHIL: After makeNode Available if called, size of hashTable = %d\n",_hashTableWithSyms->size());
       TR_BitVector tmpAliases(comp()->trMemory()->currentStackRegion());
       traceMsg(comp(), "For Node %p UseDefAliases = ",node);
       UseDefAliases.getAliasesAndUnionWith(tmpAliases);
