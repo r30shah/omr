@@ -902,9 +902,9 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
                }
             }
          }
-      /*
       else
          {
+         /*
          if ((parent != NULL || !node->getOpCode().isResolveOrNullCheck()) &&
              !_simulatedNodesAsArray[node->getGlobalIndex()] &&
              !node->getOpCode().isCase() && node->getReferenceCount() > 1)
@@ -915,12 +915,11 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
             //    traceMsg(comp(), "Replaced node : %p Replacing node : %p\n", node, availableExpression);
             doneCommoning = true;
             }
-
+         */
          if (trace())
             traceMsg(comp(), "Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
          _simulatedNodesAsArray[node->getGlobalIndex()] = availableExpression;
          }
-      */
       }
    }
 
