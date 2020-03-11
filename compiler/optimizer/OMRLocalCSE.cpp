@@ -777,8 +777,11 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
        shouldCommonNode(parent, node) &&
        performTransformation(comp(), "%s   Local Common Subexpression Elimination commoning node : %p by available node : %p\n", optDetailString(), node, availableExpression))
       {
+      // We can allow final non volatile fields to be commoned even during the volatile only phase
+      // as we do not expect those field to be changing. This enables up to common volatiles that are based on an 
+      // indirection chain of such final non volatiles (or autos or parms that are not global by definition)
       if (!node->getOpCode().hasSymbolReference() ||
-          (_volatileState == VOLATILE_ONLY && node->getSymbol()->isVolatile()) ||
+          (_volatileState == VOLATILE_ONLY && (node->getSymbol()->isVolatile() || node->getSymbol()->isAutoOrParm() || node->getSymbol()->isFinal())) ||
           (_volatileState != VOLATILE_ONLY))
          {
          TR_ASSERT(_curBlock, "_curBlock should be non-null\n");
@@ -880,17 +883,6 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
          }
       else
          {
-         if ((parent != NULL || !node->getOpCode().isResolveOrNullCheck()) &&
-             !_simulatedNodesAsArray[node->getGlobalIndex()] &&
-             !node->getOpCode().isCase() && node->getReferenceCount() > 1)
-            {
-            _replacedNodesAsArray[_nextReplacedNode] = node;
-            _replacedNodesByAsArray[_nextReplacedNode++] = availableExpression;
-            // if (trace())
-            //    traceMsg(comp(), "Replaced node : %p Replacing node : %p\n", node, availableExpression);
-            doneCommoning = true;
-            }
-
          if (trace())
             traceMsg(comp(), "Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
          _simulatedNodesAsArray[node->getGlobalIndex()] = availableExpression;
