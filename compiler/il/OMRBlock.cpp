@@ -903,6 +903,10 @@ static std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> findAvailableR
    std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> toReturn = std::make_pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber>(-1,-1);
 
    TR_GlobalRegisterNumber start, end;
+   while (node->getOpCodeValue() == TR::PassThrough)
+      {
+      node = node->getFirstChild();
+      }
    TR::DataType dt = node->getType();
    if (dt.isIntegral() || dt.isAddress())
       {
@@ -1017,7 +1021,11 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
       TR::Node *dep = regDeps->getChild(i);
       if (dep->getOpCodeValue() == TR::PassThrough)
          {
-         TR::Node *value = dep->getFirstChild();
+         TR::Node *value = dep;
+         do
+            value = value->getFirstChild();
+         while (value->getOpCodeValue() == TR::PassThrough);
+            
          auto nodeInfoEntry = nodeInfo->find(value);
          // If a node referenced under the PassThrough node post split point requires uncommoning
          // We need to check if the we can use the information to allocate the register for the node or not.
