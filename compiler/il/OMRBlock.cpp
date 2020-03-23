@@ -901,6 +901,9 @@ static std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> findAvailableR
    TR_GlobalRegisterNumber lastVRF = comp->cg()->getLastGlobalVRF();
 
    std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> toReturn = std::make_pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber>(-1,-1);
+   static bool forceTemps = feGetEnv("TR_ForceTempsInSplitPostGRA") != NULL;
+   if (forceTemps)
+      return toReturn;
 
    TR_GlobalRegisterNumber start, end;
    while (node->getOpCodeValue() == TR::PassThrough)
