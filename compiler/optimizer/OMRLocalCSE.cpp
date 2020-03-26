@@ -781,7 +781,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
       // as we do not expect those field to be changing. This enables up to common volatiles that are based on an 
       // indirection chain of such final non volatiles (or autos or parms that are not global by definition)
       if (!node->getOpCode().hasSymbolReference() ||
-          (_volatileState == VOLATILE_ONLY && (node->getSymbol()->isVolatile() || node->getSymbol()->isAutoOrParm() || node->getSymbol()->isFinal())) ||
+          (_volatileState == VOLATILE_ONLY && (node->getSymbol()->isVolatile() || node->getSymbol()->isAutoOrParm())) ||
           (_volatileState != VOLATILE_ONLY))
          {
          TR_ASSERT(_curBlock, "_curBlock should be non-null\n");
