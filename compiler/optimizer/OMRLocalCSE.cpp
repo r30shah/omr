@@ -162,11 +162,11 @@ int32_t OMR::LocalCSE::perform()
       if (doExtraPassForVolatiles())
          {
          if (trace())
-            traceMsg(comp(), "LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
+            traceMsg(comp(), "LocalCSE entering pass for volatile elimination - PASS 1 for volatiles ONLY, start node = n%dn, last node = n%dn\n",tt->getNode()->getGlobalIndex(), exitTreeTop->getNode()->getGlobalIndex());
          _volatileState = VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          if (trace())
-            traceMsg(comp(), "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
+            traceMsg(comp(), "LocalCSE volatile only pass finished, entering PASS 2 for non-volatiles ONLY, start node = n%dn, last node = n%dn\n",tt->getNode()->getGlobalIndex(), exitTreeTop->getNode()->getGlobalIndex());
          _volatileState = NON_VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          }
@@ -413,12 +413,12 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    vcount_t visitCount = comp()->getVisitCount();
 
    if (trace())
-     traceMsg(comp(), "Examining node %p\n",node);
+     traceMsg(comp(), "\tExamining node n%dn parent n%dn\n",node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex(), -1);
 
    if (!isFirstReferenceToNode(parent, childNum, node, visitCount))
       {
       if (trace())
-         traceMsg(comp(), "\tNot first Reference to Node\n");
+         traceMsg(comp(), "\t\tNot first Reference to Node\n");
 
       doCommoningAgainIfPreviouslyCommoned(node, parent, childNum);
       return;
@@ -433,9 +433,12 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
          nullCheckReference = node;
          }
       }
-
+   if (trace())
+      traceMsg(comp(), "\tChecking the children of the node first\n");
    for (int32_t i = 0 ; i < node->getNumChildren(); i++)
       examineNode(node->getChild(i), seenAvailableLoadedSymbolReferences, node, i, nextLoadIndex, &nodeCanBeAvailable, depth+1);
+   if (trace())
+      traceMsg(comp(), "\tChecked Children, now looking into Node n%dn parent n%dn\n", node->getGlobalIndex(), parent != NULL ? parent->getGlobalIndex() :-1);
 
    node->setVisitCount(visitCount);
    bool doneCopyPropagation = false;
@@ -445,8 +448,8 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    // because of strict/non strict problems when a very large float/double value
    // is stored and then read.
    //
-   TR::SymbolReference * symRef = node->getOpCode().hasSymbolReference() ? node->getSymbolReference() : 0;
-   if (symRef && node->getOpCode().isLoadVar())
+   TR::SymbolReference * symRef = node->getOpCode().hasSymbolReference() ? node->getSymbolReference() : NULL;
+   if (symRef != NULL && node->getOpCode().isLoadVar())
       {
       StoreMap::iterator result = _storeMap->find(symRef->getReferenceNumber());
       if (result != _storeMap->end() && result->second->getSymbolReference()->getReferenceNumber() == symRef->getReferenceNumber())
