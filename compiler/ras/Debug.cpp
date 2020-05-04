@@ -3998,6 +3998,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_S390interpreterSyncLongStaticGlue:                return "_interpreterSyncLongStaticGlue";
          case TR_S390interpreterSyncFloatStaticGlue:               return "_interpreterSyncFloatStaticGlue";
          case TR_S390interpreterSyncDoubleStaticGlue:              return "_interpreterSyncDoubleStaticGlue";
+         case TR_S390jitAddPicToPatchOnClassUnload:                return "__jitCallJitAddPicToPatchOnClassUnload";
          case TR_S390jitLookupInterfaceMethod:                     return "__jitLookupInterfaceMethod";
          case TR_S390jitMethodIsNative:                            return "__jitMethodIsNative";
          case TR_S390jitMethodIsSync:                              return "__jitMethodIsSync";
