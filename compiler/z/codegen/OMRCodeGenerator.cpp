@@ -110,6 +110,8 @@
 #include "infra/SimpleRegex.hpp"
 #include "infra/Stack.hpp"
 #include "infra/CfgEdge.hpp"
+#include "objectfmt/JitCodeRXObjectFormat.hpp"
+#include "objectfmt/JitCodeRWXObjectFormat.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"
@@ -5793,4 +5795,10 @@ OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intp
    return
       !self()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
+   }
+
+void
+OMR::Z::CodeGenerator::createObjectFormat()
+   {
+   self()->setObjectFormat(new (self()->trHeapMemory()) TR::JitCodeRWXObjectFormat());
    }

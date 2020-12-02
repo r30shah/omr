@@ -393,6 +393,7 @@ public:
 
    void buildRegisterMapForInstruction(TR_GCStackMap *map);
 
+   void createObjectFormat();
    // BCDCHK node
    TR::Node * _currentCheckNode;
    void setCurrentCheckNodeBeingEvaluated(TR::Node * n) { _currentCheckNode = n; }
