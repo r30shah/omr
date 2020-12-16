@@ -698,6 +698,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJITHelpersoptimizedClone",     "O\tenable java version of object clone()", SET_OPTION_BIT(TR_EnableJITHelpersoptimizedClone), "F"},
    {"enableJITServerFollowRemoteCompileWithLocalCompile", "O\tenable JITServer to perform local compilations for its remotely compiled methods", SET_OPTION_BIT(TR_JITServerFollowRemoteCompileWithLocalCompile), "F"},
    {"enableJITServerHeuristics",          "O\tenable JITServer heuristics", SET_OPTION_BIT(TR_EnableJITServerHeuristics), "F"},
+   {"enableJProfDebugForMethod",          "O\tenable spepcial Debug configuration for JProfiling", SET_OPTION_BIT(TR_EnableJProfDebugForMethod), "F"},
    {"enableJProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_EnableJProfiling), "F"},
    {"enableJProfilingInProfilingCompilations", "O\tEnable the use of jprofiling instrumentation in profiling compilations", RESET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"enableLastRetrialLogging",          "O\tenable fullTrace logging for last compilation attempt. Needs to have a log defined on the command line", SET_OPTION_BIT(TR_EnableLastCompilationRetrialLogging), "F"},
