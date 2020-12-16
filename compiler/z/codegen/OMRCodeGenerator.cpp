@@ -620,7 +620,7 @@ OMR::Z::CodeGenerator::initialize()
 bool
 OMR::Z::CodeGenerator::getSupportsBitPermute()
    {
-   return true;
+   return false;
    }
 
 bool OMR::Z::CodeGenerator::prepareForGRA()
