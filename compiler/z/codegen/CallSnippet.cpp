@@ -38,6 +38,7 @@
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/jittypes.h"
+#include "env/VMJ9.h"
 #include "il/DataTypes.hpp"
 #include "il/LabelSymbol.hpp"
 #include "il/MethodSymbol.hpp"
@@ -195,6 +196,34 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
       }
 
    return buffer;
+   }
+
+int32_t
+TR::S390CallSnippet::adjustCallOffsetWithTrampoline(uintptr_t targetAddr, uint8_t * currentInst, TR::SymbolReference *callSymRef, TR::Snippet *snippet)
+   {
+   uintptr_t currentInstPtr = reinterpret_cast<intptr_t>(currentInst);
+   int32_t offsetHalfWords = static_cast<int32_t>((targetAddr - currentInstPtr) / 2 );
+   TR::CodeGenerator *cg = snippet->cg();
+   if (cg->directCallRequiresTrampoline(targetAddr, currentInstPtr))
+      {
+      TR::SymbolReference *callSymRef = getRealMethodSymbolReference();
+
+      if (callSymRef->getReferenceNumber() < TR_S390numRuntimeHelpers)
+         targetAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(callSymRef->getReferenceNumber(), reinterpret_cast<void *>(currentInstPtr));
+      else
+         targetAddr = cg->fe()->methodTrampolineLookup(cg->comp(), callSymRef, reinterpret_cast<void *>(currentInstPtr));
+
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddr, reinterpret_cast<intptr_t>(currentInst)),
+                        "Local trampoline must be directly reachable.");
+
+      offsetHalfWords = static_cast<int32_t>((targetAddr - currentInstPtr) / 2);
+
+      snippet->setUsedTrampoline(true);
+      }
+
+   snippet->setSnippetDestAddr(targetAddr);
+
+   return offsetHalfWords;
    }
 
 /**
