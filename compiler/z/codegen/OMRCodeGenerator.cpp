@@ -220,13 +220,25 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
 
    if (node->isUnneededIALoad())
       {
-      if ((parent->getOpCodeValue() == TR::ifacmpne
-            || parent->getOpCodeValue() == TR::ificmpeq
-            || parent->getOpCodeValue() == TR::ificmpne
-            || parent->getOpCodeValue() == TR::ifacmpeq)
-         && !self()->willGenerateNOPForVirtualGuard(node))
+      if (parent->getOpCodeValue() == TR::ifacmpne
+         || parent->getOpCodeValue() == TR::ificmpeq
+         || parent->getOpCodeValue() == TR::ificmpne
+         || parent->getOpCodeValue() == TR::ifacmpeq)
          {
-         node->setUnneededIALoad(false);
+         if (!parent->isNopableInlineGuard() || !self()->getSupportsVirtualGuardNOPing())
+            {
+            node->setUnneededIALoad(false);
+            }
+         else
+            {
+            TR_VirtualGuard *virtualGuard = self()->comp()->findVirtualGuardInfo(parent);
+            if (!((comp->performVirtualGuardNOPing() || parent->isHCRGuard() || parent->isOSRGuard())
+                     && comp->isVirtualGuardNOPingRequired(virtualGuard))
+               && virtualGuard->canBeRemoved())
+               {
+               node->setUnneededIALoad(false);
+               }
+            }
          }
       else if (parent->getOpCode().isNullCheck())
          {
