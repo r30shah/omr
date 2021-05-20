@@ -232,8 +232,8 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
          else
             {
             TR_VirtualGuard *virtualGuard = self()->comp()->findVirtualGuardInfo(parent);
-            if (!((comp->performVirtualGuardNOPing() || parent->isHCRGuard() || parent->isOSRGuard())
-                     && comp->isVirtualGuardNOPingRequired(virtualGuard))
+            if (!((self()->comp()->performVirtualGuardNOPing() || parent->isHCRGuard() || parent->isOSRGuard())
+                     && self()->comp->isVirtualGuardNOPingRequired(virtualGuard))
                && virtualGuard->canBeRemoved())
                {
                node->setUnneededIALoad(false);
