@@ -339,7 +339,6 @@ static bool tryFoldCompileTimeLoad(
    bool &isGlobal)
    {
    isGlobal = true;
-
    if (!node->getOpCode().isLoad())
       return false;
    else if (node->getOpCode().isLoadReg())
@@ -446,6 +445,25 @@ static bool tryFoldCompileTimeLoad(
                return true;
                }
             return didSomething;
+            }
+         else if (node->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()
+                  && node->getFirstChild() == curNode
+                  && constraint->isNonNullObject()
+                  && constraint->getClassType()
+                  && constraint->getClassType()->asFixedClass()
+                  && constraint->getClass())
+            {
+            if (vp->trace())
+               traceMsg(vp->comp(), "VP Transforming VFTLoad to loadaddr: as n%dn is VFT load of known class", node->getGlobalIndex());
+            node->setNumChildren(0);
+            TR::Node::recreate(node, TR::loadaddr);
+            // TODO: While testing check out why we need to set Flags to 0
+            node->setFlags(0);
+            TR_OpaqueClassBlock *clazz = constraint->getClass();
+            node->setSymbolReference(vp->comp()->getSymRefTab()->findOrCreateClassSymbol(vp->comp()->getMethodSymbol(), -1, clazz));
+            vp->removeNode(curNode, true);
+            TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "VFTLoadKnownObject/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
+            return true;
             }
          else if (!curNode->getOpCode().isLoadIndirect())
             {
