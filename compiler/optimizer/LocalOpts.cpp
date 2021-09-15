@@ -2758,6 +2758,21 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
           lastRealNode->getOpCode().isCall())
          noSideEffectsInBetween = false;
 
+      if (strcmp(comp()->signature(), "Test_String.test_Constructor13()V") == 0)
+         {
+         if (lastRealNode->getOpCodeValue() == TR::compressedRefs &&
+             lastRealNode->getFirstChild()->getOpCodeValue() == TR::awrtbari &&
+             lastRealNode->getFirstChild()->getSymbolReference()->getSymbol() != NULL &&
+             lastRealNode->getFirstChild()->getSymbolReference()->getSymbol()->getRecognizedField() == TR::Symbol::Java_lang_String_value)
+            {
+            TR::Node* awrtbariNode = lastRealNode->getFirstChild();
+            if (performTransformation(comp(), "%sFilip: Introducing a NullPointerException for store at %p for debug agent\n", optDetailString(), awrtbariNode))
+               {
+               awrtbariNode->getSecondChild()->decReferenceCount
+               awrtbariNode->setAndIncChild(1, TR::Node::create(awrtbariNode, TR::aconst, 0, 0));
+               }
+            }
+         }
 
       //TR::Node *lastRealNode = lastRealTree->getNode();
 
