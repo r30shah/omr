@@ -1100,10 +1100,6 @@ static bool checkEquivalentIndirectLoadChain(TR::Node *lhs, TR::Node *rhs)
 //
 bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree)
    {
-   static char *enableSimplifyBooleanStore = feGetEnv("TR_enableSimplifyBooleanStore");
-   if (enableSimplifyBooleanStore == NULL)
-      return false;
-
    if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
