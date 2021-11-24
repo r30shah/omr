@@ -1819,13 +1819,6 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
          {
          return NULL;
          }
-      // If the node entered is a common node, then there is no guarantee that the child of the common node will still be alive.
-      // And when we try to access the value in that node, we might receive values from a node that might've been killed already.
-      // Thus, the optimization will not work.
-      if (node->getRegister() != NULL)
-         {
-         return NULL;
-         }
       int32_t tZeros = trailingZeroes(longConstValue);
       int32_t lZeros = leadingZeroes(longConstValue);
       int32_t tOnes  = trailingZeroes(~longConstValue);
