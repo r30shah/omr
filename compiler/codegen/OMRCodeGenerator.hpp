@@ -1630,7 +1630,7 @@ public:
    bool getSupportsAutoSIMD() { return _flags4.testAny(SupportsAutoSIMD);}
    void setSupportsAutoSIMD() { _flags4.set(SupportsAutoSIMD);}
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType) { return false; }
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType, int32_t) { return false; }
 
    bool removeRegisterHogsInLowerTreesWalk() { return _flags3.testAny(RemoveRegisterHogsInLowerTreesWalk);}
    void setRemoveRegisterHogsInLowerTreesWalk() { _flags3.set(RemoveRegisterHogsInLowerTreesWalk);}

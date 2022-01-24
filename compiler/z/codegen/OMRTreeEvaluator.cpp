@@ -15537,28 +15537,34 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
 
 int32_t getVectorElementSize(TR::Node *node)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8: return 1;
-      case TR::VectorInt16: return 2;
-      case TR::VectorInt32:
-      case TR::VectorFloat: return 4;
-      case TR::VectorInt64:
-      case TR::VectorDouble: return 8;
+      case TR::Int8: return 1;
+      case TR::Int16: return 2;
+      case TR::Int32:
+      case TR::Float: return 4;
+      case TR::Int64:
+      case TR::Double: return 8;
       default: TR_ASSERT(false, "Unknown vector node type %s for element size\n", node->getDataType().toString()); return 0;
       }
    }
 
 int32_t getVectorElementSizeMask(TR::Node *node)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8: return 0;
-      case TR::VectorInt16: return 1;
-      case TR::VectorInt32:
-      case TR::VectorFloat: return 2;
-      case TR::VectorInt64:
-      case TR::VectorDouble: return 3;
+      case TR::Int8: return 0;
+      case TR::Int16: return 1;
+      case TR::Int32:
+      case TR::Float: return 2;
+      case TR::Int64:
+      case TR::Double: return 3;
       default: TR_ASSERT(false, "Unknown vector node type %s for Element Size Control Mask\n", node->getDataType().toString()); return 0;
       }
    }
@@ -15578,17 +15584,20 @@ int32_t getVectorElementSizeMask(int8_t size)
 TR::Register *
 OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
-   switch (node->getDataType())
+   switch (node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64:
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
          opCode = TR::InstOpCode::VLC;
          break;
-      case TR::VectorFloat:
-      case TR::VectorDouble:
+      case TR::Float:
+      case TR::Double:
          opCode = TR::InstOpCode::VFPSO;
          break;
       default:
@@ -15623,6 +15632,9 @@ bool canUseNodeForFusedMultiply(TR::Node *node)
 bool
 generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic negateOp)
    {
+   TR_ASSERT_FATAL(addNode->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
    TR::Compilation *comp = cg->comp();
 
    TR::Node     *mulNode  = addNode->getFirstChild();
@@ -15636,7 +15648,9 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
       }
 
    // if the FloatMAF option is not set and the node is not FP strict, we can't generate FMA operations
-   if ((addNode->getType().isFloatingPoint() || TR::VectorFloat == addNode->getType() || TR::VectorDouble == addNode->getType())
+   if ((addNode->getType().isFloatingPoint() ||
+        TR::Float == addNode->getType().getVectorElementType() ||
+        TR::Double == addNode->getType().getVectorElementType())
        && !comp->getOption(TR_FloatMAF) && !mulNode->isFPStrictCompliant())
       return false;
 
@@ -15694,7 +15708,10 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
 TR::Register *
 OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if ((node->getDataType() == TR::VectorDouble || node->getDataType() == TR::VectorFloat) &&
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   if ((node->getDataType().getVectorElementType() == TR::Double || node->getDataType().getVectorElementType() == TR::Float) &&
       (canUseNodeForFusedMultiply(node->getFirstChild()) || canUseNodeForFusedMultiply(node->getSecondChild())) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMA))
       {
@@ -15706,16 +15723,16 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    else
       {
       TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
-      switch (node->getDataType())
+      switch (node->getDataType().getVectorElementType())
          {
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
             opCode = TR::InstOpCode::VA;
             break;
-         case TR::VectorFloat:
-         case TR::VectorDouble:
+         case TR::Float:
+         case TR::Double:
             opCode = TR::InstOpCode::VFA;
             break;
          default:
@@ -15729,7 +15746,11 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if ((node->getDataType() == TR::VectorDouble || node->getDataType() == TR::VectorFloat) &&
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   if ((node->getDataType().getVectorElementType() == TR::Double ||
+        node->getDataType().getVectorElementType() == TR::Float) &&
       canUseNodeForFusedMultiply(node->getFirstChild()) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMS))
       {
@@ -15741,16 +15762,16 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    else
       {
       TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
-      switch (node->getDataType())
+      switch (node->getDataType().getVectorElementType())
          {
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
             opCode = TR::InstOpCode::VS;
             break;
-         case TR::VectorFloat:
-         case TR::VectorDouble:
+         case TR::Float:
+         case TR::Double:
             opCode = TR::InstOpCode::VFS;
             break;
          default:
@@ -15764,12 +15785,15 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VML);
-      case TR::VectorInt64:
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VML);
+      case TR::Int64:
          {
          // emulated, no Z instruction available
 
@@ -15815,8 +15839,8 @@ OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cg->decReferenceCount(node->getChild(1));
          return returnReg;
          }
-      case TR::VectorFloat:
-      case TR::VectorDouble:
+      case TR::Float:
+      case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFM);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
@@ -15825,6 +15849,9 @@ OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bool isDivision)
    {
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
    TR::Node *dividend = node->getChild(0);
    TR::Node *divisor = node->getChild(1);
 //   if(dividend->getOpCode().isLoadConst && divisor->getOpCode().isLoadConst())
@@ -15862,7 +15889,7 @@ OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bo
       dependencies->addPostCondition(divisorGPR, TR::RealRegister::AssignAny);
 
       bool isUnsigned = divisor->isUnsigned();
-      bool is64Bit = (node->getDataType() == TR::VectorInt64);
+      bool is64Bit = (node->getDataType().getVectorElementType() == TR::Int64);
       TR::InstOpCode::Mnemonic divOp = TR::InstOpCode::bad;
       if (is64Bit)
          divOp = isUnsigned ? TR::InstOpCode::DLGR : TR::InstOpCode::DSGR;
@@ -15910,14 +15937,17 @@ OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bo
 TR::Register *
 OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL(node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64: return TR::TreeEvaluator::vDivOrRemHelper(node, cg, true);
-      case TR::VectorFloat:
-      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFD);
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64: return TR::TreeEvaluator::vDivOrRemHelper(node, cg, true);
+      case TR::Float:
+      case TR::Double: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFD);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -15943,13 +15973,16 @@ OMR::Z::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getFirstChild()->getDataType())
+   TR_ASSERT_FATAL(node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   switch(node->getFirstChild()->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ);
-      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE);
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ);
+      case TR::Double: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -15957,14 +15990,17 @@ OMR::Z::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL(node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
    TR::Register *targetReg;
-   switch(node->getFirstChild()->getDataType())
+   switch(node->getFirstChild()->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64: targetReg = TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ); break;
-      case TR::VectorDouble: targetReg = TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE); break;
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64: targetReg = TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ); break;
+      case TR::Double: targetReg = TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE); break;
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); break;
       }
 
@@ -15986,14 +16022,17 @@ OMR::Z::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL(node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
    TR::InstOpCode::Mnemonic op = node->getOpCode().isUnsignedCompare() ? TR::InstOpCode::VCHL : TR::InstOpCode::VCH;
-   switch(node->getFirstChild()->getDataType())
+   switch(node->getFirstChild()->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, op);
-      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCH);
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, op);
+      case TR::Double: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCH);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -16008,9 +16047,12 @@ OMR::Z::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL(node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
    TR::InstOpCode::Mnemonic op = node->getOpCode().isUnsignedCompare() ? TR::InstOpCode::VCHL : TR::InstOpCode::VCH;
 
-   if (node->getFirstChild()->getDataType() == TR::VectorDouble)
+   if (node->getFirstChild()->getDataType().getVectorElementType() == TR::Double)
       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCHE);
    else
       {
@@ -16217,24 +16259,27 @@ OMR::Z::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, returnReg, vectorReg, memRef, getVectorElementSizeMask(vectorChild));
 
-   TR::DataType dt = vectorChild->getDataType();
+   TR_ASSERT_FATAL(vectorChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   
+   TR::DataType dt = vectorChild->getDataType().getVectorElementType();
    bool isUnsigned = (!node->getType().isInt64() && node->isUnsigned());
-   if (dt == TR::VectorDouble || dt == TR::VectorFloat)
+   if (dt == TR::Double || dt == TR::Float)
       {
       TR::Register *tempReg = returnReg;
       returnReg = cg->allocateRegister(TR_FPR);
-      if (dt == TR::VectorFloat)
+      if (dt == TR::Float)
          {
          generateRSInstruction(cg, TR::InstOpCode::SLLG, node, tempReg, 32); //floats are stored in the high half of the floating point register
          }
       generateRRInstruction(cg, TR::InstOpCode::LDGR, node, returnReg, tempReg);
       cg->stopUsingRegister(tempReg);
       }
-   else if (dt == TR::VectorInt16 && !isUnsigned)
+   else if (dt == TR::Int16 && !isUnsigned)
       {
       generateRRInstruction(cg, (cg->comp()->target().is64Bit()) ? TR::InstOpCode::LGHR : TR::InstOpCode::LHR, node, returnReg, returnReg);
       }
-   else if (dt == TR::VectorInt8 && !isUnsigned)
+   else if (dt == TR::Int8 && !isUnsigned)
       {
       generateRRInstruction(cg, (cg->comp()->target().is64Bit()) ? TR::InstOpCode::LGBR : TR::InstOpCode::LBR, node, returnReg, returnReg);
       }
@@ -16253,6 +16298,10 @@ TR::Register *
 OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *vectorNode = node->getFirstChild();
+
+   TR_ASSERT_FATAL(vectorNode->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::Node *elementNode = node->getSecondChild();
    TR::Node *valueNode = node->getThirdChild();
 

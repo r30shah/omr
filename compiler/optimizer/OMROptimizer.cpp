@@ -2474,14 +2474,6 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
                if (node1->getAddress() != node2->getAddress())
                   return false;
                break;
-            case TR::VectorInt64:
-            case TR::VectorInt32:
-            case TR::VectorInt16:
-            case TR::VectorInt8:
-            case TR::VectorDouble:
-               if (node1->getLiteralPoolOffset() != node2->getLiteralPoolOffset())
-                  return false;
-               break;
 #ifdef J9_PROJECT_SPECIFIC
             case TR::Aggregate:
                if (!areBCDAggrConstantNodesEquivalent(node1, node2, _comp))
@@ -2492,6 +2484,11 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
                break;
             default:
                {
+               if (node1->getDataType().isVector())
+                  {
+                  if (node1->getLiteralPoolOffset() != node2->getLiteralPoolOffset())
+                     return false;
+                  }
 #ifdef J9_PROJECT_SPECIFIC
                if (node1->getDataType().isBCD())
                   {

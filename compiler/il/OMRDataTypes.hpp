@@ -216,6 +216,16 @@ enum TR_SharedCacheHint
 namespace TR
 {
 
+enum VectorLength
+   {
+   NoVectorLength=0,
+   VectorLength128,
+   VectorLength256,
+   VectorLength512,
+   VectorLength64,
+   NumVectorLenghts = VectorLength128 // TODO: Define based on platform
+   };
+
 /**
  * Data type supported by OMR and whatever the configured language is.
  */
@@ -229,18 +239,20 @@ enum DataTypes
    Float,
    Double,
    Address,
-   VectorInt8,
-   VectorInt16,
-   VectorInt32,
-   VectorInt64,
-   VectorFloat,
-   VectorDouble,
    Aggregate,
    NumOMRTypes,
 #include "il/DataTypesEnum.hpp"
-   NumTypes
+   NumNonVectorTypes,
+   NumVectorElementTypes = Double,
+   // this space is reserved for vector types generated at runtime
+   // the generated types can be used to index tables of size NumTypes as usual
+   NumTypes =  NumNonVectorTypes + NumVectorElementTypes * NumVectorLenghts
    };
+
 }
+
+
+
 
 /**
  * @name OMRDataTypeIntegerLimits
@@ -388,10 +400,12 @@ public:
    int32_t getMaxPrecisionFromType();
 
    TR::DataType getVectorIntegralType();
-   TR::DataType getVectorElementType();
-
+   inline TR::DataType getVectorElementType();
+   inline TR::VectorLength getVectorLength();
+   inline static TR::DataTypes createVectorType(TR::DataTypes elementType, TR::VectorLength length);
+   
    TR::DataType vectorToScalar();
-   TR::DataType scalarToVector();
+   TR::DataType scalarToVector(TR::VectorLength);
 
    const char * toString() const;
 
@@ -437,5 +451,18 @@ template <> inline bool OMR::DataType::isUnsignedInt32<uint32_t>() { return true
 template <> inline bool OMR::DataType::isUnsignedInt64<uint64_t>() { return true; }
 
 } // namespace OMR
+
+namespace TR
+{
+// temporary 128-bit vector types
+// will be removed when all vector opcodes are switched to new ones
+static const TR::DataTypes Vector128Int8  = OMR::DataType::createVectorType(TR::Int8, TR::VectorLength128);
+static const TR::DataTypes Vector128Int16 = OMR::DataType::createVectorType(TR::Int16, TR::VectorLength128);
+static const TR::DataTypes Vector128Int32 = OMR::DataType::createVectorType(TR::Int32, TR::VectorLength128);
+static const TR::DataTypes Vector128Int64 = OMR::DataType::createVectorType(TR::Int64, TR::VectorLength128);
+static const TR::DataTypes Vector128Float = OMR::DataType::createVectorType(TR::Float, TR::VectorLength128);
+static const TR::DataTypes Vector128Double = OMR::DataType::createVectorType(TR::Double, TR::VectorLength128);
+}
+
 
 #endif

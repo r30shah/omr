@@ -43,10 +43,9 @@ namespace OMR
 class OMR_EXTENSIBLE IL
    {
 
-   public:
+   private:
 
-   TR::IL* self();
-
+   // these tables require special treatment of vector opcodes
    static TR::ILOpCodes opCodesForConst[];
    static TR::ILOpCodes opCodesForDirectLoad[];
    static TR::ILOpCodes opCodesForDirectReadBarrier[];
@@ -73,6 +72,10 @@ class OMR_EXTENSIBLE IL
    static TR::ILOpCodes opCodesForIfCompareGreaterThan[];
    static TR::ILOpCodes opCodesForIfCompareGreaterOrEquals[];
    static TR::ILOpCodes opCodesForSelect[];
+
+   public:
+
+   TR::IL* self();
 
    TR::ILOpCodes opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode);
    TR::ILOpCodes opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode);

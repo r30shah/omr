@@ -342,25 +342,22 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
             break;
             }
 
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            {
-            if (numVRFArgs < getNumVectorArgumentRegisters())
-               {
-               lri = numVRFArgs;
-               }
-            
-            // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
-            numGPRArgs++;
-            numVRFArgs++;
-            break;
-            }
-
          default:
             {
+            if (paramCursor->getDataType().isVector())
+               {
+               // TODO: exclude Float?
+               if (numVRFArgs < getNumVectorArgumentRegisters())
+                  {
+                  lri = numVRFArgs;
+                  }
+            
+               // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
+               numGPRArgs++;
+               numVRFArgs++;
+               break;
+               }
+            
             TR_ASSERT_FATAL(false, "Unknown data type %s", paramCursor->getDataType().toString());
             break;
             }

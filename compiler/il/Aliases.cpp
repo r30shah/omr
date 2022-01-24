@@ -695,7 +695,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             {
             if (!aliases)
                aliases = new (aliasRegion) TR_BitVector(bvInitialSize, aliasRegion, growability);
-            aliases->set(symRefTab->getArrayShadowIndex(_symbol->getDataType().scalarToVector()));
+            // TODO: handle all vector lengths        
+            aliases->set(symRefTab->getArrayShadowIndex(_symbol->getDataType().scalarToVector(TR::VectorLength128)));
             }
 
          if (_symbol->isArrayShadowSymbol() &&

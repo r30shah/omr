@@ -80,8 +80,7 @@ OMR::DataType::isFloatingPoint()
 bool
 OMR::DataType::isVector()
    {
-   return self()->getDataType() == TR::VectorInt8 || self()->getDataType() == TR::VectorInt16 || self()->getDataType() == TR::VectorInt32 || self()->getDataType() == TR::VectorInt64 ||
-                        self()->getDataType() == TR::VectorFloat || self()->getDataType() == TR::VectorDouble;
+   return _type >= TR::NumNonVectorTypes;
    }
 
 bool
@@ -199,5 +198,32 @@ OMR::DataType::operator>(TR::DataTypes rhs)
    {		
    return _type > rhs;		
    }		
+
+TR::DataTypes
+OMR::DataType::createVectorType(TR::DataTypes elementType, TR::VectorLength length)
+   {
+   //TR_ASSERT_FATAL(elementType > TR::NoType  && elementType <= TR::NumVectorElementTypes, "Invalid vector element type\n");
+   //TR_ASSERT_FATAL(length > TR::NoVectorLength  && length <= TR::NumVectorLengths, "Invalid vector length\n");
+   
+   TR::DataTypes type = (TR::DataTypes)(TR::NumNonVectorTypes + (length-1) * TR::NumVectorElementTypes + elementType - 1);
+   
+   return type; 
+   }
+
+TR::DataType
+OMR::DataType::getVectorElementType()
+   {
+   //TR_ASSERT_FATAL(isVector(), "getVectorElementType() is called on non-vector type\n");
+   
+   return (TR::DataTypes)((_type - TR::NumNonVectorTypes) % TR::NumVectorElementTypes + 1);
+   }
+
+TR::VectorLength
+OMR::DataType::getVectorLength()
+   {
+   //TR_ASSERT_FATAL(isVector(), "getVectorLength() is called on non-vector type\n");
+   
+   return (TR::VectorLength)((_type - TR::NumNonVectorTypes) / TR::NumVectorElementTypes + 1);
+   }
 
 #endif // OMR_DATATYPES_INLINES_INCL

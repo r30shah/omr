@@ -374,23 +374,20 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
             break;
             }
 
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            {
-            if (numVRFArgs < getNumVectorArgumentRegisters())
-               {
-               lri = numVRFArgs;
-               }
-
-            numVRFArgs++;
-            break;
-            }
-
          default:
             {
+            if (paramCursor->getDataType().isVector()) 
+               {
+               // TODO: do we need to exclude Float?
+               if (numVRFArgs < getNumVectorArgumentRegisters())
+                  {
+                  lri = numVRFArgs;
+                  }
+
+               numVRFArgs++;
+               break;
+               }
+
             TR_ASSERT_FATAL(false, "Unknown data type %s", paramCursor->getDataType().toString());
             break;
             }
@@ -589,16 +586,17 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
                      }
                   }
             break;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            indexInArgRegistersArray = numVectorArgs;
-            argRegNum = getVectorArgumentRegister(indexInArgRegistersArray);
-            numVectorArgs ++;
+         default:
+            {
+            if (parmCursor->getDataType().isVector())
+               {
+               // TODO: exclude Float?
+               indexInArgRegistersArray = numVectorArgs;
+               argRegNum = getVectorArgumentRegister(indexInArgRegistersArray);
+               numVectorArgs ++;
+               }
             break;
-         default: break;
+            }
          }
       if (argRegNum == TR::RealRegister::NoReg)
          {
