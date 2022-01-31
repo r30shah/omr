@@ -424,6 +424,8 @@ public:
    virtual bool getSupportsBitPermute();
    int32_t getEstimatedExtentOfLitLoop()  {return _extentOfLitPool;}
 
+   bool supportsMergingGuards();
+
    bool supportsBranchPreload()          {return _cgFlags.testAny(S390CG_enableBranchPreload);}
    void setEnableBranchPreload()          {_cgFlags.set(S390CG_enableBranchPreload);}
    void setDisableBranchPreload()          {_cgFlags.reset(S390CG_enableBranchPreload);}

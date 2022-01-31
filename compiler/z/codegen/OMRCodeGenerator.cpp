@@ -1790,6 +1790,16 @@ OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelp
    return result;
    }
 
+bool
+OMR::Z::CodeGenerator::supportsMergingGuards()
+   {
+   static bool disableMergingGuardsOnZ = feGetEnv("TR_DisableMergingGuardsOnZ") != NULL;
+   return !disableMergingGuardsOnZ && 
+            self()->getSupportsVirtualGuardNOPing() &&
+            self()->comp()->performVirtualGuardNOPing() &&
+            !self()->comp()->compileRelocatableCode();
+   }
+
 // Helpers for profiled interface slots
 void
 OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)
