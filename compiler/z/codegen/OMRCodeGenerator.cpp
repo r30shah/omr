@@ -4720,7 +4720,7 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
    return (MINLONGDISP <= disp) && (disp <= MAXLONGDISP);
    }
 
-bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, int32_t)
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, int32_t length)
    {
    if(length != 128) return false;
 
