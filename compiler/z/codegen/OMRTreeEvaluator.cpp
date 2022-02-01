@@ -15633,7 +15633,7 @@ bool
 generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic negateOp)
    {
    TR_ASSERT_FATAL(addNode->getDataType().getVectorLength() == TR::VectorLength128,
-                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+                   "Only 128-bit vectors are supported %s", addNode->getDataType().toString());
    
    TR::Compilation *comp = cg->comp();
 
