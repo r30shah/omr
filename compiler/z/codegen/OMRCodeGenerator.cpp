@@ -4741,7 +4741,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       switch(opcode.getVectorOperation())
          {
          case OMR::vadd:
-            if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+            if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
                return true;
             else
                return false;
@@ -4754,8 +4754,20 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
    switch (opcode.getOpCodeValue())
       {
       case TR::vsub:
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vmul:
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
+            return true;
+         static bool enableEmulatedVMULFor64Bit = (dt == TR::Int64 && feGetEnv("TR_VectorEmulateInt64MULOnZ") != NULL);
+         return enableEmulatedVMULFor64Bit;
       case TR::vdiv:
+         if (dt == TR::Float || dt == TR::Double)
+            return true;
+         static bool enableEmulatedVDivForInteger = ((dt == TR::Int64 || dt == TR::Int32) && feGetEnv("TR_VectorEmulateIntDivOnZ") != NULL);
+         return enableEmulatedVDivForInteger;
       case TR::vneg:
          if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
@@ -4765,7 +4777,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
          else
             return false;
