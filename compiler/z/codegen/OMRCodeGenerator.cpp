@@ -4761,7 +4761,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vmul:
          if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
             return true;
-         static bool enableEmulatedVMULFor64Bit = (dt == TR::Int64 && feGetEnv("TR_VectorEmulate Int64MULOnZ") != NULL);
+         static bool enableEmulatedVMULFor64Bit = (dt == TR::Int64 && feGetEnv("TR_VectorEmulateInt64MULOnZ") != NULL);
          return enableEmulatedVMULFor64Bit;
       case TR::vdiv:
          if (dt == TR::Float || dt == TR::Double)
