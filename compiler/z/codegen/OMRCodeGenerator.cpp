@@ -4769,7 +4769,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
          static bool enableEmulatedVDivForInteger = ((dt == TR::Int64 || dt == TR::Int32) && feGetEnv("TR_VectorEmulateIntDivOnZ") != NULL);
          return enableEmulatedVDivForInteger;
       case TR::vneg:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
          else
             return false;
@@ -4784,7 +4784,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vxor:
       case TR::vor:
       case TR::vand:
-         if (dt == TR::Int32 || dt == TR::Int64)
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64)
             return true;
          else
             return false;
