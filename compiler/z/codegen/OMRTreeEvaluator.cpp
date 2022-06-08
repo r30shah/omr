@@ -1294,7 +1294,20 @@ OMR::Z::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double || 
+                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14)),
+                        "VFMA is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getNumChildren() == 3, "VFMA node is expected to have 3 children, got %d instead", node->getNumChildren());
+   TR::Register *resultReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
+   TR::Register *va = cg->evaluate(node->getFirstChild());
+   TR::Register *vb = cg->evaluate(node->getSecondChild());
+   TR::Register *vc = cg->evaluate(node->getThirdChild());
+   generateVRReInstruction(cg, TR::InstOpCode::VFMA, node, resultReg, va, vb, vc, static_cast<uint8_t>(getVectorElementSizeMask(node)), 0);
+   node->setRegister(resultReg);
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
+   cg->decReferenceCount(node->getThirdChild());
+   return resultReg;
    }
 
 TR::Register*

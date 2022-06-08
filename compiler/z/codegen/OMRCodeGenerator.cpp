@@ -4774,6 +4774,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
          else
             return false;
       case OMR::vdiv:
+      case OMR::vfma:
          if (et == TR::Float || et == TR::Double)
             return true;
          else
