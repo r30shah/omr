@@ -523,18 +523,16 @@ OMR::Z::CodeGenerator::initialize()
          cg->setSupportsTM();
       }
 
-   if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+   if (comp->target().cpu.isAtleast(OMR_PROCESSOR_S390_Z13) &&
+         comp->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY) &&
+         !comp->getOption(TR_DisableSIMD))
       {
-      comp->setOption(TR_DisableVectorBCD);
+      cg->setSupportsVectorRegisters();
+      cg->setSupportsAutoSIMD();
       }
-
-   // Be pessimistic until we can prove we don't exit after doing code-generation
-   cg->setExitPointsInMethod(true);
-
-   // Set up vector register support for machine after zEC12.
-   // This should also happen before prepareForGRA
-   if (comp->getOption(TR_DisableSIMD))
+   else
       {
+      comp->setOption(TR_DisableSIMD);
       comp->setOption(TR_DisableAutoSIMD);
       comp->setOption(TR_DisableSIMDArrayCompare);
       comp->setOption(TR_DisableSIMDArrayTranslate);
@@ -543,6 +541,14 @@ OMR::Z::CodeGenerator::initialize()
       comp->setOption(TR_DisableSIMDStringHashCode);
       comp->setOption(TR_DisableVectorRegGRA);
       }
+
+   if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+      {
+      comp->setOption(TR_DisableVectorBCD);
+      }
+
+   // Be pessimistic until we can prove we don't exit after doing code-generation
+   cg->setExitPointsInMethod(true);
 
    cg->setSupportsRecompilation();
 
