@@ -523,7 +523,7 @@ OMR::Z::CodeGenerator::initialize()
          cg->setSupportsTM();
       }
 
-   if (comp->target().cpu.isAtleast(OMR_PROCESSOR_S390_Z13) &&
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) &&
          comp->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY) &&
          !comp->getOption(TR_DisableSIMD))
       {
