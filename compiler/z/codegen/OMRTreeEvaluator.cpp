@@ -1294,10 +1294,11 @@ OMR::Z::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double || 
                      (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14)),
                         "VFMA is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
-   TR_ASSERT_FATAL_WITH_NODE(node, node->getNumChildren() == 3, "VFMA node is expected to have 3 children, got %d instead", node->getNumChildren());
    TR::Register *resultReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
    TR::Register *va = cg->evaluate(node->getFirstChild());
    TR::Register *vb = cg->evaluate(node->getSecondChild());
