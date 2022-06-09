@@ -4725,7 +4725,8 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
     * Prior to z14, vector operations that operated on floating point numbers only supported
     * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+   if (!self()->getSupportsVectorRegisters() ||
+         (dt == TR::Float && !self()->comp()->target().cpu.getSupportsVectorFacilityEnhancement1()))
       {
       return false;
       }
