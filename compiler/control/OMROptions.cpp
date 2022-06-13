@@ -475,6 +475,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #ifdef J9_PROJECT_SPECIFIC
    {"disableOSRGuardRemoval",             "O\tdisable OSR guard removal",                      TR::Options::disableOptimization, osrGuardRemoval, 0, "P"},
 #endif
+   {"disableOSRGuardsMerging",            "O\tdisable Merging of OSR guards", SET_OPTION_BIT(TR_DisableOSRGuardsMerging), "F"},
    {"disableOSRLiveRangeAnalysis",        "O\tdisable live range analysis for on-stack replacement", SET_OPTION_BIT(TR_DisableOSRLiveRangeAnalysis), "F"},
    {"disableOSRLocalRemat",               "O\tdisable use of remat when inserting guards for on-stack replacement", SET_OPTION_BIT(TR_DisableOSRLocalRemat), "F"},
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
