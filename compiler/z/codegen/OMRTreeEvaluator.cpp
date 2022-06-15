@@ -1314,7 +1314,12 @@ OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::DataType dt = node->getDataType().getVectorElementType();
+   TR_ASSERT_FATAL(dt != Float || cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1(),
+                  "VFPSO is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
+   return inlineVectorUnaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFPSO : TR::InstOpCode::VLP);
    }
 
 TR::Register*
@@ -14624,7 +14629,16 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFPSO:
-         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0 /* invert sign */, 0, getVectorElementSizeMask(node));
+         /**
+          * VFPSO instruction is used for two cases, one to complement the
+          * elements and other one to return abs value of elements. Ideally we
+          * should have passed in mode as well to inlineVectorUnaryOp, but given
+          * that most of the other unary operation does not need operation mode
+          * to be passed in right now, we are manually checking is the node is
+          * vneg or vabs here so that we can set correct operation mode. 
+          */
+         uint8_t operationMask = node->getOpCodeValue() == OMR::vabs ? 2 : 0;
+         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, operationMask, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFSQ:
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));

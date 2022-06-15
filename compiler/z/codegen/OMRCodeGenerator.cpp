@@ -4768,6 +4768,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case OMR::vstorei:
       case OMR::vneg:
       case OMR::vsplats:
+      case OMR::vabs:
          return true;
       case OMR::vmul:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
