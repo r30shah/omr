@@ -14637,8 +14637,7 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
           * to be passed in right now, we are manually checking is the node is
           * vneg or vabs here so that we can set correct operation mode. 
           */
-         uint8_t operationMask = node->getOpCodeValue() == OMR::vabs ? 2 : 0;
-         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, operationMask, 0, getVectorElementSizeMask(node));
+         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, node->getOpCodeValue() == OMR::vabs ? 2 : 0, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFSQ:
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
