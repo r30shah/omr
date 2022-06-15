@@ -1296,7 +1296,7 @@ OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
-   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double || 
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
                      (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14)),
                         "VFMA is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
    TR::Register *resultReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
