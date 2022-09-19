@@ -578,6 +578,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableVariablePrecisionDAA",        "O\tdisable variable precision DAA optimizations",   SET_OPTION_BIT(TR_DisableVariablePrecisionDAA), "F"},
    {"disableVectorAPIExpansion",          "M\tdisable expansion of Vector API",               SET_OPTION_BIT(TR_DisableVectorAPIExpansion), "F"},
    {"disableVectorBCD",                   "O\tdisable vector instructions for DAA BCD intrinsics ", SET_OPTION_BIT(TR_DisableVectorBCD), "F"},
+   {"disableVectorPreservation",          "O\tdisable vector register preservation on Z",     SET_OPTION_BIT(TR_DisableVectorPreservation), "F"},
    {"disableVectorRegGRA",                "O\tdisable global register allocation for vector regs",   SET_OPTION_BIT(TR_DisableVectorRegGRA), "F"},
    {"disableVerification",                "O\tdisable verification of internal data structures between passes", SET_OPTION_BIT(TR_DisableVerification), "F"},
    {"disableVirtualGuardHeadMerger",      "O\tdisable virtual guard head merger",              TR::Options::disableOptimization, virtualGuardHeadMerger, 0, "P"},

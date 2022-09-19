@@ -545,6 +545,9 @@ OMR::Z::CodeGenerator::initialize()
 
    // Set up vector register support for machine after zEC12.
    // This should also happen before prepareForGRA
+   // THIS is temporary change to test vector preservation on Z
+   if (comp->getOption(TR_DisableVectorPreservation))
+      comp->setOption(TR_DisableSIMD);
    if (comp->getOption(TR_DisableSIMD))
       {
       comp->setOption(TR_DisableAutoSIMD);
