@@ -461,8 +461,8 @@ OMR::Compilation::Compilation(
       // Check if the optimization plan has hypothetical bug enabled
       if (!optimizationPlan->getIntroduceHypotheticalBugForDemo())
          {
-         int32_t num = self()->convertNonDeterministicInput(1,4,NULL,0);
-         printf("Method matches, num = %d\n", num);
+         unt64_t num = self()->getPersistentInfo()->getElapsedTime();
+         printf("Method matches, num = %ld\n", num);
          if (num%4 == 0)
             {
             optimizationPlan->setIntroduceHypotheticalBugForDemo(true);
