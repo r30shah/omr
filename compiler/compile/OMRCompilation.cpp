@@ -461,7 +461,7 @@ OMR::Compilation::Compilation(
       // Check if the optimization plan has hypothetical bug enabled
       if (!optimizationPlan->getIntroduceHypotheticalBugForDemo())
          {
-         int32_t num = _adhocRandom->getRandom();
+         int32_t num = self()->convertNonDeterministicInput(1,4,NULL,0);
          printf("Method matches, num = %d\n", num);
          if (num%4 == 0)
             {
