@@ -456,6 +456,23 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
+   if (optimizationPlan != NULL && strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
+      {
+      // Check if the optimization plan has hypothetical bug enabled
+      if (!optimizationPlan->getIntroduceHypotheticalBugForDemo())
+         {
+         TR_PseudoRandomNumbersListElement *pseudoRandomList = self()->getPersistentInfo()->getPseudoRandomNumbersList();
+         int32_t num = self()->getPersistentInfo()->getNextPseudoRandomNumber(4);
+         if (num%4 == 0)
+            {
+            optimizationPlan->setIntroduceHypotheticalBugForDemo(true);
+            }
+         }
+      if (optimizationPlan->getIntroduceHypotheticalBugForDemo())
+         {
+         _options->setOption(TR_NPEBugForDemo);
+         }
+      }
    }
 
 OMR::Compilation::~Compilation() throw()

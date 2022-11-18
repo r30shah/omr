@@ -444,7 +444,7 @@ enum TR_CompilationOptions
    // Available                               = 0x80000000 + 11,
 
    // Option word 12
-   // Available                               = 0x00000020 + 12,
+   TR_NPEBugForDemo                           = 0x00000020 + 12,
    // Available                               = 0x00000040 + 12,
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,

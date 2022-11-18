@@ -180,6 +180,9 @@ class TR_OptimizationPlan
    void setIsGPUCompileCPUCode(bool b = true) { _flags.set(IsGPUCompileCPUCode, b); }
    bool isGPUCompileCPUCode() { return _flags.testAny(IsGPUCompileCPUCode); }
 
+   void setIntroduceHypotheticalBugForDemo(bool b = true) { _flags.set(IntroduceHypotheticalBugForDemo, b); }
+   bool getIntroduceHypotheticalBugForDemo() { return _flags.testAny(IntroduceHypotheticalBugForDemo); }
+
    void setGPUBlockDimX(int32_t dim) { _gpuBlockDimX = dim; }
    int32_t getGPUBlockDimX() { return _gpuBlockDimX; }
 
@@ -224,6 +227,7 @@ class TR_OptimizationPlan
       DowngradedDueToSamplingJProfiling=0x00400000, // Compilation was downgraded to cold just because we wanted to do JProfiling
       InducedByDLT            = 0x00800000, // Compilation that follows a DLT compilation
       DisableEDO              = 0x01000000, // Do not insert EDO profiling trees for this compilation
+      IntroduceHypotheticalBugForDemo = = 0x02000000, 
    };
    private:
    TR_OptimizationPlan  *_next;       // to link events in the pool
