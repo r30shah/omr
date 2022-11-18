@@ -461,8 +461,7 @@ OMR::Compilation::Compilation(
       // Check if the optimization plan has hypothetical bug enabled
       if (!optimizationPlan->getIntroduceHypotheticalBugForDemo())
          {
-         TR_PseudoRandomNumbersListElement *pseudoRandomList = self()->getPersistentInfo()->getPseudoRandomNumbersList();
-         int32_t num = self()->getPersistentInfo()->getNextPseudoRandomNumber(4);
+         int32_t num = _adhocRandom->getRandom();
          printf("Method matches, num = %d\n", num);
          if (num%4 == 0)
             {
