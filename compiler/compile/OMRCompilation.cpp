@@ -456,21 +456,25 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
-   if (optimizationPlan != NULL && strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
+   if (self()->getCurrentMethod() != NULL)
       {
-      // Check if the optimization plan has hypothetical bug enabled
-      if (!optimizationPlan->getIntroduceHypotheticalBugForDemo())
+      TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self->getCurrentMethod());
+      if (methodInfo != NULL && strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
          {
-         uint64_t num = self()->getPersistentInfo()->getElapsedTime();
-         printf("Method matches, num = %ld\n", num);
-         if (num%4 == 0)
+         // Check if the optimization plan has hypothetical bug enabled
+         if (!methodInfo->getNPEBugForDemo())
             {
-            optimizationPlan->setIntroduceHypotheticalBugForDemo(true);
+            uint64_t num = self()->getPersistentInfo()->getElapsedTime();
+            printf("Method matches, num = %ld\n", num);
+            if (num%4 == 0)
+               {
+               methodInfo->setNPEBugForDemo(true);
+               }
             }
-         }
-      if (optimizationPlan->getIntroduceHypotheticalBugForDemo())
-         {
-         _options->setOption(TR_NPEBugForDemo);
+         if (methodInfo->getNPEBugForDemo())
+            {
+            _options->setOption(TR_NPEBugForDemo);
+            }
          }
       }
    }
