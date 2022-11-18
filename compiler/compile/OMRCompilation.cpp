@@ -463,6 +463,7 @@ OMR::Compilation::Compilation(
          {
          TR_PseudoRandomNumbersListElement *pseudoRandomList = self()->getPersistentInfo()->getPseudoRandomNumbersList();
          int32_t num = self()->getPersistentInfo()->getNextPseudoRandomNumber(4);
+         printf("Method matches, num = %d\n", num);
          if (num%4 == 0)
             {
             optimizationPlan->setIntroduceHypotheticalBugForDemo(true);
