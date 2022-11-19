@@ -471,7 +471,8 @@ OMR::Compilation::Compilation(
          printf("Method matches, num changed to = %d\n", numberForIntroducingBug);
          numberSet = true;
          }
-      else if(numberForIntroducingBug%4 == 0)
+      
+      if(numberForIntroducingBug%4 == 0)
          {
          _options->setOption(TR_NPEBugForDemo);
          }
