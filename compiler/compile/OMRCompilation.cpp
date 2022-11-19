@@ -459,8 +459,7 @@ OMR::Compilation::Compilation(
    
    //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self());
    //if (methodInfo != NULL)
-      {
-      //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
+   //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
    static bool numberSet = false;
    static uint32_t numberForIntroducingBug = 1;
    if (strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
