@@ -190,6 +190,7 @@ OMR::Compilation::getHotnessName(TR_Hotness h)
    return pHotnessNames[h];
    }
 
+static uint32_t numberForIntroducingBug = 1;
 
 OMR::Compilation::Compilation(
       int32_t id,
@@ -457,26 +458,23 @@ OMR::Compilation::Compilation(
    else
       _osrCompilationData = NULL;
    
-   TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self());
-   if (methodInfo != NULL)
+   //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self());
+   //if (methodInfo != NULL)
       {
       //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
-      if (/*methodInfo != NULL &&*/ strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
+   static bool numberSet = false;
+   if (strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
+      {
+      printf("Method matches, num = %ld\n", num);
+      if (!numberSet)
          {
-         // Check if the optimization plan has hypothetical bug enabled
-         if (!methodInfo->getNPEBugForDemo())
-            {
-            uint64_t num = self()->getPersistentInfo()->getElapsedTime();
-            printf("Method matches, num = %ld\n", num);
-            if (num%4 == 0)
-               {
-               methodInfo->setNPEBugForDemo(true);
-               }
-            }
-         if (methodInfo->getNPEBugForDemo())
-            {
-            _options->setOption(TR_NPEBugForDemo);
-            }
+         numberForIntroducingBug = self()->getPersistentInfo()->getElapsedTime();
+         printf("Method matches, num changed to = %ld\n", num);
+         numberSet = true;
+         }
+      else if(numberForIntroducingBug%4 == 0)
+         {
+         _options->setOption(TR_NPEBugForDemo);
          }
       }
    }
