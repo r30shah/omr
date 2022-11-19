@@ -190,7 +190,6 @@ OMR::Compilation::getHotnessName(TR_Hotness h)
    return pHotnessNames[h];
    }
 
-static uint32_t numberForIntroducingBug = 1;
 
 OMR::Compilation::Compilation(
       int32_t id,
@@ -463,13 +462,14 @@ OMR::Compilation::Compilation(
       {
       //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
    static bool numberSet = false;
+   static uint32_t numberForIntroducingBug = 1;
    if (strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
       {
-      printf("Method matches, num = %ld\n", num);
+      printf("Method matches, num = %ld\n", numberForIntroducingBug);
       if (!numberSet)
          {
          numberForIntroducingBug = self()->getPersistentInfo()->getElapsedTime();
-         printf("Method matches, num changed to = %ld\n", num);
+         printf("Method matches, num changed to = %ld\n", numberForIntroducingBug);
          numberSet = true;
          }
       else if(numberForIntroducingBug%4 == 0)
