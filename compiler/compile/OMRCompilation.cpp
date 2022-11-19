@@ -456,10 +456,12 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
-   if (self()->getCurrentMethod() != NULL)
+   
+   TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self());
+   if (methodInfo != NULL)
       {
-      TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
-      if (methodInfo != NULL && strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
+      //TR_PersistentMethodInfo *methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
+      if (/*methodInfo != NULL &&*/ strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
          {
          // Check if the optimization plan has hypothetical bug enabled
          if (!methodInfo->getNPEBugForDemo())
