@@ -474,6 +474,7 @@ OMR::Compilation::Compilation(
       
       if(numberForIntroducingBug%4 == 0)
          {
+         printf("Setting Option to fail\n");
          _options->setOption(TR_NPEBugForDemo);
          }
       }
