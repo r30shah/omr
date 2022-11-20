@@ -2759,7 +2759,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
          noSideEffectsInBetween = false;
 
       //static bool debugAgentBug = feGetEnv("TR_DebugAgentBug") != NULL;
-      traceMsg(comp(), "Looking at node n%dn\n",lastReadNode->getGlobalIndex());
+      traceMsg(comp(), "Looking at node n%dn\n",lastRealNode->getGlobalIndex());
       if (comp()->getOption(TR_NPEBugForDemo) && strcmp(comp()->signature(), "Test_String.test_Constructor13()V") == 0)
          {
          if (lastRealNode->getOpCodeValue() == TR::compressedRefs &&
