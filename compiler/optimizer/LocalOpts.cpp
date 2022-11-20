@@ -2757,7 +2757,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
           lastRealNode->getOpCode().isStore() ||
           lastRealNode->getOpCode().isCall())
          noSideEffectsInBetween = false;
-
+      /*
       //static bool debugAgentBug = feGetEnv("TR_DebugAgentBug") != NULL;
       traceMsg(comp(), "Looking at node n%dn\n",lastRealNode->getGlobalIndex());
       if (comp()->getOption(TR_NPEBugForDemo) && strcmp(comp()->signature(), "Test_String.test_Constructor13()V") == 0)
@@ -2775,7 +2775,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                }
             }
          }
-
+      */
       //TR::Node *lastRealNode = lastRealTree->getNode();
 
       if ((lastRealNode->getOpCode().isBranch() &&
