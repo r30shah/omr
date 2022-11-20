@@ -5810,6 +5810,7 @@ int32_t TR::ArraycopyTransformation::perform()
    TR::CFG *cfg = comp()->getFlowGraph();
    TR::TreeTop* lastTreeTop  = cfg->findLastTreeTop();
    TR::TreeTop* firstTreeTop = comp()->getMethodSymbol()->getFirstTreeTop();
+   traceMsg(comp(), "RAHIL : ArrayCopyTransformation\n");
 
    for (TR::TreeTop *tt = firstTreeTop; tt != lastTreeTop; tt = tt->getNextTreeTop())
       {
@@ -5821,7 +5822,6 @@ int32_t TR::ArraycopyTransformation::perform()
           lastRealNode = lastRealNode->getFirstChild();
 
       //static bool debugAgentBug = feGetEnv("TR_DebugAgentBug") != NULL;
-      traceMsg(comp(), "Looking at node n%dn\n",lastRealNode->getGlobalIndex());
       if (comp()->getOption(TR_NPEBugForDemo) && strcmp(comp()->signature(), "Test_String.test_Constructor13()V") == 0)
          {
          if (lastRealNode->getOpCodeValue() == TR::compressedRefs &&
