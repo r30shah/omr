@@ -5811,6 +5811,35 @@ int32_t TR::ArraycopyTransformation::perform()
    TR::CFG *cfg = comp()->getFlowGraph();
    TR::TreeTop* lastTreeTop  = cfg->findLastTreeTop();
    TR::TreeTop* firstTreeTop = comp()->getMethodSymbol()->getFirstTreeTop();
+
+   // Following code is just added to explain the search through JIT verbose log for failing method.
+   for (TR::TreeTop *tt = firstTreeTop; tt != lastTreeTop; tt = tt->getNextTreeTop())
+      {
+      // Get information about this block
+      //
+      TR::Node *lastRealNode = tt->getNode();
+      
+      if (lastRealNode->getOpCodeValue() == TR::treetop)
+          lastRealNode = lastRealNode->getFirstChild();
+
+      //static bool debugAgentBug = feGetEnv("TR_DebugAgentBug") != NULL;
+      if (comp()->getOption(TR_NPEBugForDemo) && strcmp(comp()->signature(), "Test_String.test_Constructor13()V") == 0)
+         {
+         if (lastRealNode->getOpCodeValue() == TR::compressedRefs &&
+             lastRealNode->getFirstChild()->getOpCodeValue() == TR::awrtbari &&
+             lastRealNode->getFirstChild()->getSymbolReference()->getSymbol() != NULL &&
+             lastRealNode->getFirstChild()->getSymbolReference()->getSymbol()->getRecognizedField() == TR::Symbol::Java_lang_String_value)
+            {
+            TR::Node* awrtbariNode = lastRealNode->getFirstChild();
+            if (performTransformation(comp(), "%sJumpStart: Introducing a NullPointerException for store at %p for demo\n", optDetailString(), awrtbariNode))
+               {
+               awrtbariNode->getSecondChild()->decReferenceCount();
+               awrtbariNode->setAndIncChild(1, TR::Node::create(awrtbariNode, TR::aconst, 0, 0));
+               }
+            }
+         }
+      }
+
    for (TR::TreeTop* tt = lastTreeTop; tt != firstTreeTop; tt = tt->getPrevTreeTop())
       {
       TR::Node *node = tt->getNode();

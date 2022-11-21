@@ -726,6 +726,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableNewCheckCastInstanceOf",      "O\tenable new Checkcast/InstanceOf evaluator", SET_OPTION_BIT(TR_EnableNewCheckCastInstanceOf), "F"},
    {"enableNewX86PrefetchTLH",           "O\tenable new X86 TLH prefetch algorithm", SET_OPTION_BIT(TR_EnableNewX86PrefetchTLH), "F"},
    {"enableNodeGC",                      "M\tenable node recycling", SET_OPTION_BIT(TR_EnableNodeGC), "F"},
+   {"enableNPEBugForDemo",                "M\tenable hypothetical NPE bug for demo", SET_OPTION_BIT(TR_NPEBugForDemo), "F"},
    {"enableOnsiteCacheForSuperClassTest", "O\tenable onsite cache for super class test",       SET_OPTION_BIT(TR_EnableOnsiteCacheForSuperClassTest), "F"},
    {"enableOSR",                          "O\tenable on-stack replacement", SET_OPTION_BIT(TR_EnableOSR), "F", NOT_IN_SUBSET},
    {"enableOSROnGuardFailure",            "O\tperform a decompile using on-stack replacement every time a virtual guard fails", SET_OPTION_BIT(TR_EnableOSROnGuardFailure), "F"},

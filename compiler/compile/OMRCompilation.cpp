@@ -456,6 +456,11 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
+
+   if (strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
+      {
+      _options->setOption(TR_NPEBugForDemo);
+      }
    }
 
 OMR::Compilation::~Compilation() throw()
