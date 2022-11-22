@@ -456,10 +456,19 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
-
+   static bool numberSet = false;
+   static uint32_t numberForIntroducingBug = 1;
    if (strcmp(self()->signature(), "Test_String.test_Constructor13()V") == 0)
       {
-      _options->setOption(TR_NPEBugForDemo);
+      if (!numberSet)
+         {
+         numberForIntroducingBug = self()->getPersistentInfo()->getElapsedTime();
+         numberSet = true;
+         }
+      if (numberForIntroducingBug%4==0)
+         {
+         _options->setOption(TR_NPEBugForDemo);
+         }
       }
    }
 
