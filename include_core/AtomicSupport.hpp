@@ -258,7 +258,9 @@ public:
 		__asm __volatile ("dmb ishst":::"memory");
 #elif defined(RISCV64) /* defined(OMR_ARCH_AARCH64) */
 		asm volatile ("fence w,w":::"memory");
-#else /* defined(RISCV64) */
+#elif defined(S390) /* defined(RISCV64) */
+		asm volatile("bcr 14,0":::"memory");
+#else /* defined(s390) */
 		asm volatile("":::"memory");
 #endif /* defined(ARM) */
 #elif defined(J9ZOS390)
