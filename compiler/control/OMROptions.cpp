@@ -2196,6 +2196,10 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       if (TR::Compiler->target.numberOfProcessors() <= 2)
          self()->setOption(TR_ConservativeCompilation, true);
 
+#if defined(TR_HOST_S390)
+      self()->setOption(TR_ForceUsePreexistence);
+#endif /* defined(TR_HOST_S390) */
+
       if (TR::Options::isQuickstartDetected()
 #if defined(J9ZOS390)
          || sharedClassCache()  // Disable GCR for zOS if SharedClasses/AOT is used
