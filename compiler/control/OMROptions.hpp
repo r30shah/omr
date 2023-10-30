@@ -1632,7 +1632,9 @@ public:
    int32_t   getTOCSize()                      {return _tocSizeInKB;}
    int32_t   getFirstOptIndex()                {return _firstOptIndex;}
    int32_t   getLastOptIndex()                 {return _lastOptIndex;}
+   void      setLatOptIndex(int32_t lastOptIndex) { _lastOptIndex = lastOptIndex; }
    int32_t   getLastOptSubIndex()              {return _lastOptSubIndex;}
+   void      setLastOptSubIndex(int32_t lastOptSubIndex) { _lastOptSubIndex = lastOptSubIndex;}
    int32_t   getLastIpaOptTransformationIndex() {return _lastIpaOptTransformationIndex;}
    int32_t   getNumInterfaceCallCacheSlots()     {return _numInterfaceCallCacheSlots;}
    int32_t   getNumInterfaceCallStaticSlots()    {return _numInterfaceCallStaticSlots;}
