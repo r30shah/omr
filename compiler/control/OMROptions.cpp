@@ -792,6 +792,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enumerateAddresses=", "D\tselect kinds of addresses to be replaced by unique identifiers in trace file", TR::Options::setAddressEnumerationBits, offsetof(OMR::Options, _addressToEnumerate), 0, "F"},
    {"estimateRegisterPressure",           "O\tdeprecated; equivalent to enableRegisterPressureSimulation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"experimentalClassLoadPhase",         "O\tenable the experimental class load phase algorithm", SET_OPTION_BIT(TR_ExperimentalClassLoadPhase), "F"},
+   {"experimentalOptRahil",         "O\tenable the experimental class load phase algorithm", SET_OPTION_BIT(TR_ExperimentalOptRahil), "F"},
    {"extractExitsByInvalidatingStructure", "O\tInstead of running exit extraction normally, detect nodes that would be extracted, and invalidate structure if there are any", SET_OPTION_BIT(TR_ExtractExitsByInvalidatingStructure), "F"},
    {"failPreXRecompile",                  "I\tfail preexistence based recompilations", SET_OPTION_BIT(TR_FailPreXRecompile), "F"},
    {"failRecompile",                      "I\tfail the compile whenever recompiling a method", SET_OPTION_BIT(TR_FailRecompile), "F"},

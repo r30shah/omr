@@ -239,7 +239,7 @@ enum TR_CompilationOptions
    TR_ExperimentalClassLoadPhase          = 0x00000020 + 5,
    TR_DisableLookahead                    = 0x00000040 + 5,
    TR_TraceBFGeneration                   = 0x00000080 + 5,
-   // Available                           = 0x00000100 + 5,
+   TR_ExperimentalOptRahil                = 0x00000100 + 5,
    TR_SuspendEarly                        = 0x00000200 + 5,
    TR_EnableEarlyCompilationDuringIdleCpu = 0x00000400 + 5,
    TR_DisableCallGraphInlining            = 0x00000800 + 5, // interpreter profiling
