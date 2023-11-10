@@ -11513,7 +11513,9 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
    {
    TR::Register * targetRegister = NULL;
    TR::Compilation *comp = cg->comp();
-   if ((node->getOpCodeValue() != TR::PassThrough && cg->useClobberEvaluate()))
+   if ((node->getOpCodeValue() != TR::PassThrough
+         && (node->getOpCodeValue() == TR::l2i && node->getFirstChild()->getReferenceCount() > 1)
+            || cg->useClobberEvaluate()))
       {
       targetRegister =  cg->gprClobberEvaluate(node->getFirstChild());
       }
