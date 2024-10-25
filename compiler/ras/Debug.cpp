@@ -1673,6 +1673,10 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<defaultValue>";
          case TR::SymbolReferenceTable::jitDispatchJ9MethodSymbol:
             return "<jitDispatchJ9Method>";
+         case TR::SymbolReferenceTable::jProfileValueSymbol:
+            return "<jProfileValueSymbol>";
+         case TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol:
+            return "<jProfileValueWithNullCHKSymbol>";
          }
       }
 
