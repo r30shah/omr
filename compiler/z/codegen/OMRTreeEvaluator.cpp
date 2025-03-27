@@ -13646,10 +13646,13 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, byteLenReg, 0, TR::InstOpCode::COND_BNH, mergeLabel, false);
       iComment("byteLen <= 0 goto mergeLabel");
       }
-
+   static bool generateLoadAndStoreForwardArrayCopy = feGetEnv("TR_GenerateLoadStoreForwardArrayCopy") != NULL;
    if (node->isForwardArrayCopy())
       {
-      TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
+      if (!generateLoadAndStoreForwardArrayCopy)
+         TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
+      else
+         deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, true, false, isConstantByteLen);
       }
    else if (node->isBackwardArrayCopy())
       {
@@ -13682,7 +13685,10 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
 
       cursor = generateS390LabelInstruction(cg, TR::InstOpCode::label, node, forwardArrayCopyLabel);
       iComment("Forward Array Copy Sequence");
-      TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
+      if (!generateLoadAndStoreForwardArrayCopy)
+         TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
+      else
+         deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, true, false, false); 
       cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel);
       iComment("Jump to MergeLabel");
 
@@ -13691,7 +13697,7 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       deps = TR::TreeEvaluator::backwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
       }
    cursor = generateS390LabelInstruction(cg, TR::InstOpCode::label, node, mergeLabel);
-   if (!(isConstantByteLen && node->isForwardArrayCopy() && byteLenNode->getConst<int64_t>() <= 256))
+   if (!(!generateLoadAndStoreForwardArrayCopy && isConstantByteLen && node->isForwardArrayCopy() && byteLenNode->getConst<int64_t>() <= 256))
       {
       deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0, 3+srm->numAvailableRegisters(), cg);
       deps->addPostCondition(byteSrcReg, TR::RealRegister::AssignAny);
