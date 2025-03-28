@@ -6580,8 +6580,8 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       static bool insertGarbageInUpperHalf = feGetEnv("TR_InsertGarbageBeforeLLGF") != NULL;
       if (insertGarbageInUpperHalf && load == TR::InstOpCode::LLGF)
          {
-         generateRILInstruction(cg, TR::InstOpCode::IIHF, node, targetRegister, 0x77ff77ff, cursor);
-         generateRILInstruction(cg, TR::InstOpCode::IILF, node, targetRegister, 0xaabbccdd, cursor);
+         generateRILInstruction(cg, TR::InstOpCode::IIHF, node, targetRegister, 0x77ff77ff);
+         generateRILInstruction(cg, TR::InstOpCode::IILF, node, targetRegister, 0xaabbccdd);
          }
       static bool useLoadAndExtendInstruction = feGetEnv("TR_UseLandLGFR") != NULL;
       if (useLoadAndExtendInstruction && load == TR::InstOpCode::LLGF)
