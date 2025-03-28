@@ -13666,6 +13666,7 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
    else
       {
       // We need to decide direction of array copy at runtime.
+      TR::Register *checkBoundReg = srm->findOrCreateScratchRegister();
       if (isConstantByteLen)
          {
          byteLenReg = cg->gprClobberEvaluate(byteLenNode);
@@ -13677,7 +13678,6 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       iComment("if byteSrcPointer >= byteDstPointer then GoTo forwardArrayCopy");
 
 
-      TR::Register *checkBoundReg = srm->findOrCreateScratchRegister();
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, checkBoundReg, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
       iComment("nextPointerToLastElement=byteSrcPointer+lengthInBytes");
 
