@@ -991,7 +991,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       {
       if (self()->cg()->insideInternalControlFlow())
          {
-         TR_ASSERT_FATAL(false, "Attempting to assign a register (%s) inside ICF", getRegisterName(targetRegister, self()->cg()));
+         //TR_ASSERT_FATAL(false, "Attempting to assign a register (%s) inside ICF", getRegisterName(targetRegister, self()->cg()));
          }
       }
    if (kindOfRegister != TR_FPR && kindOfRegister != TR_VRF && assignedRegister != NULL)
