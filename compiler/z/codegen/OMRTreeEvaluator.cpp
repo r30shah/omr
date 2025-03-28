@@ -13362,7 +13362,7 @@ OMR::Z::TreeEvaluator::generateMemToMemElementCopy(TR::Node *node, TR::CodeGener
       cursor = generateS390LabelInstruction(cg, TR::InstOpCode::label, node, topOfLoop);
       iComment("topOfLoop");
       // needsGuardedLoad means we are generating MemToMemCopy sequence in OOL where ICF starts here
-      if (needsGuardedLoad)
+      if (needsGuardedLoad || genStartICFLabel)
          topOfLoop->setStartInternalControlFlow();
       TR::TreeEvaluator::generateLoadAndStoreForArrayCopy(node, cg, srcMemRef, dstMemRef, srm, elementType, needsGuardedLoad, deps);
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, elementSize, cg));
