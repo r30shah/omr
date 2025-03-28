@@ -6577,7 +6577,23 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          }
 
       targetRegister = cg->allocateRegister();
-      generateRXInstruction(cg, load, node, targetRegister, tempMR);
+      static bool insertGarbageInUpperHalf = feGetEnv("TR_InsertGarbageBeforeLLGF") != NULL;
+      if (insertGarbageInUpperHalf && load == TR::InstOpCode::LLGF)
+         {
+         generateRILInstruction(cg, TR::InstOpCode::IIHF, node, targetRegister, 0x77ff77ff, cursor);
+         generateRILInstruction(cg, TR::InstOpCode::IILF, node, targetRegister, 0xaabbccdd, cursor);
+         }
+      static bool useLoadAndExtendInstruction = feGetEnv("TR_UseLandLGFR") != NULL;
+      if (useLoadAndExtendInstruction && load == TR::InstOpCode::LLGF)
+         {
+         generateRXInstruction(cg, TR::InstOpCode::L, node, targetRegister, tempMR);
+         generateRRInstruction(cg, TR::InstOpCode::LGFR, node, targetRegister, targetRegister);
+         }
+      else
+         {
+         generateRXInstruction(cg, load, node, targetRegister, tempMR);
+         }
+      
       }
 
    return targetRegister;
