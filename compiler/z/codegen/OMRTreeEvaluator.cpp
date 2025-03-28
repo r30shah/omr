@@ -13652,7 +13652,10 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       if (!generateLoadAndStoreForwardArrayCopy)
          TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
       else
+         {
+         byteLenReg = cg->gprClobberEvaluate(byteLenNode);
          deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, true, false, isConstantByteLen);
+         }
       }
    else if (node->isBackwardArrayCopy())
       {
