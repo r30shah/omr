@@ -6587,7 +6587,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       if (useLoadAndExtendInstruction && load == TR::InstOpCode::LLGF)
          {
          generateRXInstruction(cg, TR::InstOpCode::L, node, targetRegister, tempMR);
-         generateRRInstruction(cg, TR::InstOpCode::LGFR, node, targetRegister, targetRegister);
+         generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, targetRegister, targetRegister);
          }
       else
          {
