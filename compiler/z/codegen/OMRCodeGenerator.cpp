@@ -654,7 +654,7 @@ OMR::Z::CodeGenerator::initialize()
                                      TR::InstOpCode(TR::InstOpCode::LXAF).canEmulate() &&
                                      TR::InstOpCode(TR::InstOpCode::LXAG).canEmulate() &&
                                      TR::InstOpCode(TR::InstOpCode::LXAQ).canEmulate();
-   if (canEmulateLXA || comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZNEXT))
+   if (canEmulateLXA || comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z17))
       {
       cg->setUseLXAInstructions(true);
       }
