@@ -6659,8 +6659,10 @@ _end:
 static BOOLEAN
 isRunningInContainer(struct OMRPortLibrary *portLibrary)
 {
-	if (OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED == PPG_processInContainerState) {
+   fprintf("RAHIL: Called isRunningInContainer\n");
+   if (OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED == PPG_processInContainerState) {
 		omrthread_monitor_enter(cgroupMonitor);
+      fprintf("RAHIL: omrsysinfo.c:6665\n");
 		if (OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED == PPG_processInContainerState) {
 			FILE *cgroupFile = NULL;
 			int32_t rc = 0;
@@ -6671,7 +6673,9 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary)
 			/* Check for existence of files that signify running in a container (Docker and Podman respectively).
 			 * Not completely reliable as these files may not be available, but it should work for most cases.
 			 */
+         fprintf("RAHIL: omrsysinfo.c:6676\n");
 			if ((0 == access("/.dockerenv", F_OK)) || (0 == access("/run/.containerenv", F_OK))) {
+            fprintf("RAHIL: omrsysinfo.c:6678\n");
 				inContainer = TRUE;
 			} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
 				/* Read PID 1's cgroup file /proc/1/cgroup and check cgroup name for each subsystem.
