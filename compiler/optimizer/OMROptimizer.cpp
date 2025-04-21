@@ -268,7 +268,7 @@ const OptimizationStrategy partialRedundancyEliminationOpts[] =
    { treeSimplification                     }, // might fold expressions created by versioning/induction variables
    { treeSimplification,          IfEnabled }, // Array length simplification shd be followed by reassoc before PRE
    { reorderArrayExprGroup,       IfEnabled }, // maximize opportunities hoisting of index array expressions
-   { partialRedundancyElimination, IfMoreThanOneBlock},
+   { partialRedundancyElimination, IfMoreThanOneBlockAndNotProfiling},
    { localCSE,                              }, // common up expression which can benefit EA
    { catchBlockRemoval,           IfEnabled }, // if checks were removed
    { deadTreesElimination,        IfEnabled }, // if checks were removed
@@ -1272,6 +1272,11 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       case IfMoreThanOneBlock:
          if (hasMoreThanOneBlock(comp()))
+            doThisOptimization = true;
+         break;
+
+      case IfMoreThanOneBlockAndNotProfiling:
+         if (hasMoreThanOneBlock(comp()) && !comp()->isProfilingCompilation())
             doThisOptimization = true;
          break;
 
