@@ -6816,7 +6816,7 @@ _end:
 
 	Trc_PRT_isRunningInContainer_container_detected(PPG_processInContainerState);
    BOOLEAN retVal = (OMRPORT_PROCESS_IN_CONTAINER_TRUE == PPG_processInContainerState) ? TRUE : FALSE; 
-   fprintf(stderr,"RAHIL: omrsysinfo.c return %ld\n", retVal);
+   fprintf(stderr,"RAHIL: omrsysinfo.c return %u\n", retVal);
 	return retVal;
 }
 
