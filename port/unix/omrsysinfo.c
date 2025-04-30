@@ -6796,7 +6796,7 @@ _end:
 			if (NULL != cgroupFile) {
 				fclose(cgroupFile);
 			}
-
+         fprintf(stderr,"RAHIL: omrsysinfo.c:6799\n");
 			if (0 != rc) {
 				PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_ERROR;
 				/* Print a warning message. */
@@ -6804,8 +6804,10 @@ _end:
 						portLibrary, J9NLS_WARNING, J9NLS_PORT_RUNNING_IN_CONTAINER_FAILURE,
 						omrerror_last_error_message(portLibrary));
 			} else if (inContainer) {
+            fprintf(stderr,"RAHIL: omrsysinfo.c:6807\n");
 				PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_TRUE;
 			} else {
+            fprintf(stderr,"RAHIL: omrsysinfo.c:6810\n");
 				PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_FALSE;
 			}
 		}
@@ -6813,8 +6815,9 @@ _end:
 	}
 
 	Trc_PRT_isRunningInContainer_container_detected(PPG_processInContainerState);
-
-	return (OMRPORT_PROCESS_IN_CONTAINER_TRUE == PPG_processInContainerState) ? TRUE : FALSE;
+   BOOLEAN retVal = (OMRPORT_PROCESS_IN_CONTAINER_TRUE == PPG_processInContainerState) ? TRUE : FALSE; 
+   fprintf(stderr,"RAHIL: omrsysinfo.c return %ld\n", retVal);
+	return retVal;
 }
 
 /**
