@@ -95,6 +95,12 @@ Region::deallocate(void * allocation, size_t) throw()
    }
 
 size_t
+Region::segmentAllocatorAllocatedRegionBytes()
+   {
+   return _segmentProvider.bytesAllocated();
+   }
+
+size_t
 Region::round(size_t bytes)
    {
    return (bytes+15) & (~15);
