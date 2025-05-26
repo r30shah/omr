@@ -163,6 +163,8 @@ public:
 
    size_t bytesAllocated() { return _bytesAllocated; }
    static size_t initialSize() { return INITIAL_SEGMENT_SIZE; }
+
+   size_t segmentAllocatorAllocatedRegionBytes() { return _segmentProvider.regionBytesAllocated(); }
 private:
    friend class TR::RegionProfiler;
 
