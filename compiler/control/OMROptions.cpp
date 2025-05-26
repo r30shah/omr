@@ -1280,6 +1280,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceRematerialization",           "L\ttrace rematerialization",                      TR::Options::traceOptimization, rematerialization, 0, "P"},
    {"traceReorderArrayIndexExpr",       "L\ttrace reorder array index expressions",        TR::Options::traceOptimization, reorderArrayIndexExpr, 0, "P"},
    {"traceSamplingJProfiling",          "L\ttrace samplingjProfiling",                     TR::Options::traceOptimization, samplingJProfiling, 0, "P"},
+   {"traceScratchSpaceUsage",           "L\ttrace scratch space usage after each optimization", SET_OPTION_BIT(TR_TraceScratchSpaceUsage), "P"},
    {"traceSEL",                         "L\ttrace sign extension load",                    TR::Options::traceOptimization, signExtendLoads, 0, "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC

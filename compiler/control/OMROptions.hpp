@@ -799,7 +799,7 @@ enum TR_CompilationOptions
    TR_DisableCustomMethodHandleThunks                 = 0x00100000 + 24,
    TR_DisableReducedPriorityForCustomMethodHandleThunks=0x00200000 + 24,
    TR_TraceSA                                         = 0x00400000 + 24,
-   // Available                                       = 0x00800000 + 24,
+   TR_TraceScratchSpaceUsage                          = 0x00800000 + 24,
    TR_EnablePrepareForOSREvenIfThatDoesNothing        = 0x01000000 + 24,
    // Available                                       = 0x02000000 + 24,
    // Available		                              = 0x04000000 + 24,
