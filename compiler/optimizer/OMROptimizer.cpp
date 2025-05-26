@@ -2210,11 +2210,21 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          traceMsg(comp(), "\nNumber of temps seen = %d\n", tempCount);
          }
 
-      if (comp()->getOption(TR_TraceOptDetails))
-          {
-          if (comp()->isOutermostMethod())
-             traceMsg(comp(), "</optimization>\n\n");
-          }
+      if (comp()->isOutermostMethod())
+         {
+         if (comp()->getOption(TR_TraceScratchSpaceUsage))
+            {
+            static bool dumpScratchSpaceUsageOnstderr = feGetEnv("TR_DumpScratchSpaceUsageOnStderr") != NULL;
+            if (dumpScratchSpaceUsageOnstderr)
+               fprintf(stderr, "%s,%d,%llu\n", manager->name(), optIndex, static_cast<unsigned long long>(trMemory()->currentStackRegion().segmentAllocatorAllocatedRegionBytes()) >> 10);
+            else
+               traceMsg(comp(), "ScratchSpaceUsage = %llu\n", static_cast<unsigned long long>(trMemory()->currentStackRegion().segmentAllocatorAllocatedRegionBytes()) >> 10);
+            }
+         if (comp()->getOption(TR_TraceOptDetails))
+            {
+            traceMsg(comp(), "</optimization>\n\n");
+            }
+         }
       }
 
 
