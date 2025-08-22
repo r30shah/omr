@@ -111,6 +111,34 @@ void killRegisterIfNotLocked(TR::CodeGenerator *cg, TR::RealRegister::RegNum reg
     }
 }
 
+static bool patchableJProfValueGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
+{
+#ifdef J9_PROJECT_SPECIFIC
+    if (node->isPatchableJProfValueGuard())
+    {
+        TR::RegisterDependencyConditions *deps;
+        if (node->getNumChildren() == 3) {
+            TR::Node *third = node->getChild(2);
+            cg->evaluate(third);
+            deps = generateRegisterDependencyConditions(cg, third, 0);
+        } else {
+            deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions((uint16_t)0, (uint16_t)0, cg);
+        }
+        // It is patchableJProfValueGuardHelepr, generating an unconditional branch to target
+        // Patchable JProfValue Guard Helper is basically an unconditional branch
+        // Post binary encoding, when the locations are added to the patchsites,
+        // based of the state, this unconditional branch can be patched to NOP to disable Profiling Data.
+        TR::Instruction *instr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node,
+            node->getBranchDestination()->getNode()->getLabel(), deps);
+        cg->addJProfilingValueProfilingGuardInstructionToList(instr);
+        cg->recursivelyDecReferenceCount(node->getFirstChild());
+        cg->recursivelyDecReferenceCount(node->getSecondChild());
+        return true;
+    }
+#endif
+    return false;
+}
+
 /**
  * Helper to generate virtual guard if node is so flagged.  In 32 bit mode the NOP instruction,
  * a BRC, has only a +ve displacement of 2^12 (4k), and so in some cases it is not safe to use it
@@ -998,7 +1026,7 @@ TR::Register *OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeG
 {
     TR::Compilation *comp = cg->comp();
 
-    if (virtualGuardHelper(node, cg)) {
+    if (virtualGuardHelper(node, cg) || patchableJProfValueGuardHelper(node, cg)) {
         return NULL;
     }
 
@@ -1190,7 +1218,7 @@ TR::Register *OMR::Z::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeG
  */
 TR::Register *OMR::Z::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    if (virtualGuardHelper(node, cg)) {
+    if (virtualGuardHelper(node, cg) || patchableJProfValueGuardHelper(node, cg)) {
         return NULL;
     }
 

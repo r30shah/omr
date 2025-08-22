@@ -1272,7 +1272,7 @@ static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGener
 TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
-    if (virtualGuardHelper(node, cg)) {
+    if (virtualGuardHelper(node, cg) || patchableJProfValueGuardHelper(node, cg)) {
         return NULL;
     } else {
 #ifdef J9_PROJECT_SPECIFIC
@@ -1992,6 +1992,34 @@ TR::Register *OMR::X86::TreeEvaluator::sucmpgtEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::X86::TreeEvaluator::sucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     return TR::TreeEvaluator::cmp2BytesEvaluator(node, TR::InstOpCode::SETBE1Reg, cg);
+}
+
+static bool patchableJProfValueGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
+{
+#ifdef J9_PROJECT_SPECIFIC
+    if (node->isPatchableJProfValueGuard())
+    {
+        TR::RegisterDependencyConditions *deps = NULL;
+        if (node->getNumChildren() == 3) {
+            TR::Node *third = node->getChild(2);
+            cg->evaluate(third);
+            deps = generateRegisterDependencyConditions(third, cg, 1);
+            deps->stopAddingConditions();
+        }
+
+        // It is patchableJProfValueGuardHelepr, generating an unconditional branch to target
+        // Patchable JProfValue Guard Helper is basically an unconditional branch
+        // Post binary encoding, when the locations are added to the patchsites,
+        // based of the state, this unconditional branch can be patched to NOP to disable Profiling Data.
+        TR::Instruction *instr = generateLabelInstruction(TR::InstOpCode::JMP4, node, node->getBranchDestination()->getNode()->getLabel(), deps, cg);
+        generatePatchableCodeAlignmentInstruction(TR::X86PatchableCodeAlignmentInstruction::CALLImm4AtomicRegions, instr, cg);
+        cg->addJProfilingValueProfilingGuardInstructionToList(instr);
+        cg->recursivelyDecReferenceCount(node->getFirstChild());
+        cg->recursivelyDecReferenceCount(node->getSecondChild());
+        return true;
+    }
+#endif
+    return false;
 }
 
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
