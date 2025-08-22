@@ -5837,6 +5837,17 @@ bool OMR::Node::isStopTheWorldGuard()
     return self()->isHCRGuard() || self()->isOSRGuard() || self()->isBreakpointGuard();
 }
 
+bool OMR::Node::isPatchableJProfValueGuard()
+{
+    return _flags.testAny(pathableJProfValueGuard) && self()->getOpCode().isIf();
+}
+
+void OMR::Node::setIsPatchableJProfValueGuard(bool v)
+{
+    TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
+    _flags.set(pathableJProfValueGuard, v);
+}
+
 TR_VirtualGuard *OMR::Node::virtualGuardInfo()
 {
     bool isGuard = _flags.testAny(inlineGuard) && self()->getOpCode().isIf();

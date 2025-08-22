@@ -1392,6 +1392,9 @@ public:
     bool isMaxLoopIterationGuard();
     void setIsMaxLoopIterationGuard(bool v);
 
+    bool isPatchableJProfValueGuard();
+    void setIsPatchableJProfValueGuard(bool v);
+
     bool isStopTheWorldGuard();
 
     TR_VirtualGuard *virtualGuardInfo(); // null for non-guard nodes
@@ -2008,6 +2011,7 @@ protected:
         // Flags used by TR_if
         maxLoopIterationGuard = 0x00000800, ///< allows redundant async check removal to remove ac's
         inlineGuard = 0x00001000,
+        pathableJProfValueGuard = 0x00002000,
         swappedChildren = 0x00020000,
         versionIfWithMaxExpr = 0x00010000,
         versionIfWithMinExpr = 0x00040000,
