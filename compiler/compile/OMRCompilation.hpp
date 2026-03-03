@@ -1012,6 +1012,10 @@ public:
 
     bool isServerInlining() const { return _isServerInlining; }
 
+    bool isInliningStartedOrDone() { return _inlinigStartedOrDone; }
+
+    void setIsInliningStartedOrDone(bool val) { _inlinigStartedOrDone = val; }
+
     bool isRecompilationEnabled() { return false; }
 
     int32_t getOptLevel();
@@ -1504,7 +1508,7 @@ private:
     bool _containsBigDecimalLoad;
     bool _isOptServer;
     bool _isServerInlining;
-
+    bool _inlinigStartedOrDone;
     bool _ilGenSuccess;
 
     bool _osrStateIsReliable;

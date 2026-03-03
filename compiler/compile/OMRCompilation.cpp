@@ -349,6 +349,7 @@ OMR::Compilation::Compilation(int32_t id, OMR_VMThread *omrVMThread, TR_FrontEnd
 #endif
         );
     _isServerInlining = !options.getOption(TR_NoOptServer);
+    _inlinigStartedOrDone = false;
 
     // TR_DisableInternalPointers must be set before the TR::CodeGenerator object is created because
     // CodeGenerator's _disableInternalPointers member is set in its constructor and this is one of
