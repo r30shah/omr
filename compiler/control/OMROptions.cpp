@@ -1376,6 +1376,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F" },
     { "experimentalClassLoadPhase", "O\tenable the experimental class load phase algorithm",
      SET_OPTION_BIT(TR_ExperimentalClassLoadPhase), "F" },
+    { "experimentRahil", "O\tenable the experiment change from RAHIL",
+     SET_OPTION_BIT(TR_ExperimentRahil), "F" },
     { "extractExitsByInvalidatingStructure",
      "O\tInstead of running exit extraction normally, detect nodes that would be extracted, and invalidate "
         "structure if there are any", SET_OPTION_BIT(TR_ExtractExitsByInvalidatingStructure), "F" },
