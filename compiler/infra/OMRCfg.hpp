@@ -291,7 +291,7 @@ public:
 
     bool consumePseudoRandomFrequencies();
 
-    void setMaxFrequency(int32_t f) { _maxFrequency = f; }
+    void setMaxFrequency(int32_t f);// { _maxFrequency = f; }
 
     int32_t getMaxFrequency() { return _maxFrequency; }
 

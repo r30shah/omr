@@ -1112,6 +1112,15 @@ void OMR::CFG::resetVisitCounts(vcount_t count)
         getStructure()->resetVisitCounts(count);
 }
 
+void OMR::CFG::setMaxFrequency(int32_t f)
+{
+    OMR::Logger *log = comp()->log();
+    bool trace = comp()->getOption(TR_TraceBFGeneration);
+    if (trace)
+        log->printf("TRACER: Setting maxFrequencyTo %d\n", f);
+    _maxFrequency = f;
+}
+
 bool OMR::CFG::consumePseudoRandomFrequencies()
 {
     TR::CFGNode *nextNode = getFirstNode();
