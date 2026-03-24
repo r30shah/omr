@@ -1073,6 +1073,10 @@ public:
 
     void setHasUnsafeSymbol() { _flags.set(HasUnsafeSymbol); }
 
+    bool canUseJProfilingBlockFrequencyInfo() { return _flags.testAny(CanUseJProfilingBlockFrequencyInfo); }
+
+    void setCanUseJProfilingBlockFrequencyInfo() { _flags.set(CanUseJProfilingBlockFrequencyInfo); }
+
     bool areSlotsSharedByRefAndNonRef() { return _flags.testAny(SlotsSharedByRefAndNonRef); }
 
     void setSlotsSharedByRefAndNonRef(bool b) { _flags.set(SlotsSharedByRefAndNonRef, b); }
@@ -1410,7 +1414,7 @@ protected:
         // AVAILABLE                      = 0x0001000,
         IsDLTCompile = 0x0002000,
         HasClassRedefinitionAssumptions = 0x0004000,
-        // AVAILABLE                      = 0x0008000,
+        CanUseJProfilingBlockFrequencyInfo     = 0x0008000,
         HasIntStreamForEach = 0x0010000,
         // AVAILABLE                      = 0x0020000,
         UsesBlockFrequencyInGRA = 0x0040000,
