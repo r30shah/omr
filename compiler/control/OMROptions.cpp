@@ -654,6 +654,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "disableJProfiling", "O\tdisable JProfiling", RESET_OPTION_BIT(TR_EnableJProfiling), "F" },
     { "disableJProfilingInProfilingCompilations",
      "O\tDisable use of jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F" },
+    { "disableJProfilingRecompLoopTest", "O\tdisableJProfilingRecompLoopTest optimization", TR::Options::disableOptimization,
+     jProfilingRecompLoopTest, 0, "P" },
     { "disableJProfilingThread", "O\tdisable separate thread for JProfiling", SET_OPTION_BIT(TR_DisableJProfilerThread),
      "F", NOT_IN_SUBSET },
     { "disableKnownObjectTable", "O\tdisable support for including heap object info in symbol references",
