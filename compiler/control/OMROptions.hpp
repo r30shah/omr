@@ -714,7 +714,7 @@ enum TR_CompilationOptions {
     TR_PaintDataCacheOnFree                                  = 0x00010000 + 20, // Enable painting of data caches on reclamation
     TR_DisableDataCacheReclamation                           = 0x00020000 + 20, // Disable reaping of data caches
     TR_DisableUseDefForShadows                               = 0x00040000 + 20,
-    // Available                                             = 0x00080000 + 20,
+    TR_TraceProfilingData                                    = 0x00080000 + 20,
     // Available                                             = 0x00100000 + 20,
     // Available                                             = 0x00200000 + 20,
     TR_DisableConservativeHotRecompilationForServerMode      = 0x00400000 + 20,
