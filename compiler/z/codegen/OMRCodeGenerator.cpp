@@ -1130,14 +1130,30 @@ void OMR::Z::CodeGenerator::createBranchPreloadCallData(TR::LabelSymbol *callLab
 void OMR::Z::CodeGenerator::insertInstructionPrefetches()
 {
     if (self()->supportsBranchPreload()) {
+        /**
+         * Example scenario
+         * BBStart block_1
+         * ...
+         * icall tmOffer()
+         * ...
+         * ifcmpne -> goto block_3
+         *      icall
+         *      iconst 0
+         * BBEnd block_1
+         * BBStart block_2 (Extension of previous block)
+         * return
+         * BBEnd block_2
+         */
         if (_hottestReturn._frequency > 6) {
             TR::Block *block = _hottestReturn._returnBlock;
             int32_t n = block->getNumber();
             TR::Block *ext = block->startOfExtendedBlock();
             block = block->startOfExtendedBlock();
-
+            // ext = block_1
+            // cursor = block_1
             TR::Instruction *cursor = block->getFirstInstruction();
             // iterate how many instr
+            // first = retn instruction
             TR::Instruction *first = _hottestReturn._returnInstr;
             TR::Instruction *real = NULL;
             int32_t count = 0;
@@ -1148,17 +1164,33 @@ void OMR::Z::CodeGenerator::insertInstructionPrefetches()
             }
             do {
                 TR::InstOpCode op = first->getOpCode();
-                if (!op.isAdmin()) {
+                if (!op.isAdmin()) { // If opcode is not pseudoinstruction - checks the opcode
                     real = first;
-                    if (op.isLabel() || op.isCall()) {
+                    // Possible that it only checks if we have indirect call or a label generated and breaks the loop
+                    // For constrained transaction code, it will not check if the opcode represents TEND so it continues
+                    // and sees the merge label in the transcation code block.
+                    /**
+                     * Label L0193:
+                     * SRLG    &GPR_0501,&GPR_0434,1
+                     * ST      &GPR_0501,#664 12(&GPR_0500)
+                     * ST      &GPR_0501,#665 12(&GPR_0291)
+                     * XR      GPR_0499,GPR_0499
+                     * assocreg
+                     * Label L0194:
+                     * TEND    #666 0(GPR0)
+                     * ...
+                     */
+                    // Fix should check if op is TEND as well so it can break
+                    if (op.isLabel() || op.isCall() || first->getOpCodeValue() == TR::InstOpCode::TEND) {
                         break;
                     }
                     count++;
                 }
-                first = first->getPrev();
+                first = first->getPrev(); // gets previous instruction
             } while (first != cursor);
-
+            // Will exit loop when it sees Label L0194
             if (count <= 2) {
+                // Will not enter count will be more than 2 - so no BPP in Epilogue
                 _hottestReturn._insertBPPInEpilogue = true;
                 return;
             }
@@ -1166,6 +1198,7 @@ void OMR::Z::CodeGenerator::insertInstructionPrefetches()
             // if we encountered a call, insert after the call or after the label that follows the call instr.
             if (first != cursor) {
                 cursor = real;
+                // real - Label L0194 - cursor = L0194
             }
             // if we didn't encounter a call or label, but there were real instructions, insert before a real
             // instruction
@@ -1184,7 +1217,9 @@ void OMR::Z::CodeGenerator::insertInstructionPrefetches()
             }
 
             TR::Instruction *second = cursor->getNext();
+            // second = TEND
             TR::Node *node = cursor->getNode();
+            // node = icall
             _hottestReturn._returnLabel = generateLabelSymbol(self());
 
             TR::Register *tempReg = self()->allocateRegister();
@@ -1194,6 +1229,8 @@ void OMR::Z::CodeGenerator::insertInstructionPrefetches()
 
             TR::MemoryReference *tempMR = generateS390MemoryReference(spReg, frameSize, self());
             tempMR->setCreatedDuringInstructionSelection();
+            // cursor = Label L0194
+            // LG - Added after Label
             cursor
                 = generateRXInstruction(self(), TR::InstOpCode::getExtendedLoadOpCode(), node, tempReg, tempMR, cursor);
 
