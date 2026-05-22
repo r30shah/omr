@@ -667,6 +667,10 @@ public:
 
     bool isLoopTransferDone() { return _flags.testAny(LoopTransferDone); }
 
+    void setIsInliningStarted() { _flags.set(HasInliningStarted); }
+
+    bool isInliningStarted() { return _flags.testAny(HasInliningStarted); }
+
     // ..........................................................................
     // Inliner
     BitVectorPool &getBitVectorPool() { return _bitVectorPool; }
@@ -1407,7 +1411,7 @@ protected:
         HasClassExtendAssumptions = 0x0000200,
         HasClassUnloadAssumptions = 0x0000400,
         HasClassPreInitializeAssumptions = 0x0000800,
-        // AVAILABLE                      = 0x0001000,
+        HasInliningStarted               = 0x0001000,
         IsDLTCompile = 0x0002000,
         HasClassRedefinitionAssumptions = 0x0004000,
         // AVAILABLE                      = 0x0008000,
