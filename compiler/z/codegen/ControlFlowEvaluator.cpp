@@ -896,7 +896,7 @@ TR::Register *OMR::Z::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGen
     TR::Instruction *inst = generateS390PseudoInstruction(cg, TR::InstOpCode::retn, node, dependencies);
     if (cg->supportsBranchPreload()) {
         int32_t frequency = comp->getCurrentBlock()->getFrequency();
-        if (frequency >= cg->_hottestReturn._frequency) {
+        if (frequency > cg->_hottestReturn._frequency) {
             cg->_hottestReturn._returnInstr = inst;
             cg->_hottestReturn._frequency = frequency;
             cg->_hottestReturn._returnBlock = comp->getCurrentBlock();
