@@ -7325,7 +7325,7 @@ bool storeHelperImmediateInstruction(TR::Node *valueChild, TR::CodeGenerator *cg
  */
 bool directMemoryStoreHelper(TR::CodeGenerator *cg, TR::Node *storeNode)
 {
-    if (comp->getOption(TR_DisableDirectMemoryStore) {
+    if (cg->comp()->getOption(TR_DisableDirectMemoryStore)) {
         return false;
     }
 
