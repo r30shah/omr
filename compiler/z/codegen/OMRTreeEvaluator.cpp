@@ -7325,13 +7325,18 @@ bool storeHelperImmediateInstruction(TR::Node *valueChild, TR::CodeGenerator *cg
  */
 bool directMemoryStoreHelper(TR::CodeGenerator *cg, TR::Node *storeNode)
 {
+    if (comp->getOption(TR_DisableDirectMemoryStore) {
+        return false;
+    }
+
     if (!cg->getConditionalMovesEvaluationMode()) {
         if (storeNode->getType().isIntegral()
             && !(storeNode->getOpCode().isIndirect() && storeNode->hasUnresolvedSymbolReference())) {
             TR::Node *valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
 
             if (valueNode->getOpCode().isLoadVar() && valueNode->getReferenceCount() == 1
-                && valueNode->getRegister() == NULL && !valueNode->hasUnresolvedSymbolReference()) {
+                && valueNode->getRegister() == NULL && !valueNode->hasUnresolvedSymbolReference()
+                && cg->storageMayOverlap(storeNode, storeNode->getSize(), valueNode, valueNode->getSize()) == TR_NoOverlap) {
                 // Pattern match the following trees:
                 //
                 // (0) xstorei b
@@ -7372,7 +7377,8 @@ bool directMemoryStoreHelper(TR::CodeGenerator *cg, TR::Node *storeNode)
 
                 // Make sure this is an integral truncation conversion
                 if (valueNode->getOpCode().isIntegralLoadVar() && valueNode->getReferenceCount() == 1
-                    && valueNode->getRegister() == NULL && !valueNode->hasUnresolvedSymbolReference()) {
+                    && valueNode->getRegister() == NULL && !valueNode->hasUnresolvedSymbolReference()
+                    && cg->storageMayOverlap(storeNode, storeNode->getSize(), valueNode, valueNode->getSize()) == TR_NoOverlap) {
                     if (valueNode->getSize() > storeNode->getSize()) {
                         // Pattern match the following trees:
                         //

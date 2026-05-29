@@ -461,6 +461,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_DisableDependencyTracking), "F" },
     { "disableDirectMemoryOps", "O\tdisable generation of direct memory instructions",
      SET_OPTION_BIT(TR_DisableDirectMemoryOps), "F" },
+    { "disableDirectMemoryStore", "O\tdisable generation of direct memory store instructions",
+     SET_OPTION_BIT(TR_DisableDirectMemoryStore), "F" },
     { "disableDirectStaticAccessOnZ", "O\tsupport relative load instructions for c and c++",
      SET_OPTION_BIT(TR_DisableDirectStaticAccessOnZ), "F" },
     { "disableDirectToJNI", "O\tdisable all JNI linkage dispatch sequences including thunks",
