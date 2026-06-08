@@ -946,6 +946,7 @@ bool OMR::Z::TreeEvaluator::isSingleRefUnevalAndCompareOrBu2iOverCompare(TR::Nod
  */
 static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGenerator *cg)
 {
+    return;
 #ifdef J9_PROJECT_SPECIFIC
     TR::Compilation *comp = cg->comp();
     if (node->isTheVirtualGuardForAGuardedInlinedCall() && cg->getSupportsVirtualGuardNOPing()) {
