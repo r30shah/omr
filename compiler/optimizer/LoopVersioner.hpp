@@ -938,6 +938,7 @@ protected:
         List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *,
         List<TR_NodeParentSymRefWeightTuple> *, List<TR_Structure> *whileLoops,
         List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk,
+        bool specializedNodesWillBeEliminated, bool conditionalsWillBeEliminated,
         SharedSparseBitVector &reverseBranchInLoops);
 
     TR::Node *findCallNodeInBlockForGuard(TR::Node *node);

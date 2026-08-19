@@ -583,7 +583,8 @@ int32_t TR_LoopVersioner::performWithoutDominators()
             versionNaturalLoop(naturalLoop, &nullCheckedReferences, &nullCheckTrees, &boundCheckTrees, &spineCheckTrees,
                 &conditionalTrees, &divCheckTrees, &awrtbariTrees, &checkCastTrees, &arrayStoreCheckTrees,
                 &asyncCheckTrees, &specializedInvariantNodes, invariantNodes, &invariantTranslationNodesList,
-                &whileLoops, &clonedInnerWhileLoops, skipAsyncCheckRemoval, reverseBranchInLoops);
+                &whileLoops, &clonedInnerWhileLoops, skipAsyncCheckRemoval,
+                specializedNodesWillBeEliminated, conditionalsWillBeEliminated, reverseBranchInLoops);
             _exitGotoTarget = NULL;
         }
 
@@ -2988,7 +2989,9 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
     List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::TreeTop> *asyncCheckTrees,
     List<TR::Node> *specializedNodes, List<TR_NodeParentSymRef> *invariantNodes,
     List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList, List<TR_Structure> *innerWhileLoops,
-    List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk, SharedSparseBitVector &reverseBranchInLoops)
+    List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk,
+    bool specializedNodesWillBeEliminated, bool conditionalsWillBeEliminated,
+    SharedSparseBitVector &reverseBranchInLoops)
 {
     OMR::Logger *log = comp()->log();
     const int loopNum = whileLoop->getNumber();
@@ -4498,6 +4501,36 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
         properRegion->addExternalEdge(newGotoBlockStructure, succBlock->getStructureOf()->getNumber(), false);
         properRegion->removeExternalEdgeTo(predBlock->getStructureOf(), succBlock->getStructureOf()->getNumber());
     }
+
+#ifdef J9_PROJECT_SPECIFIC
+    // Phase-change recompilation trigger.
+    //
+    // All CFG edges, treetop splicing, and loop structure work for
+    // clonedLoopInvariantBlock is now complete.  Every method invocation
+    // that fails the pre-header specialization guard enters
+    // clonedLoopInvariantBlock exactly once before running the unspecialized
+    // loop body — making it the correct per-invocation granularity for a
+    // phase-change recompilation counter.
+    //
+    // insertColdPathCounterRecompilation prepends:
+    //   istore coldPathRecompTriggerCount (decrement by 1)
+    //   ificmpne → remainder              (skip recompile when count != 0)
+    // then splits the block and inserts a cold call-recompile block
+    // (TR_jitRetranslateCallerWithPrep, RecompDueToPhaseChange) before the
+    // tail.  The CFG structure added by this call is self-contained and does
+    // not interfere with any of the edges wired above.
+    static bool enablePhaseChangeRecomp = feGetEnv("TR_EnablePhaseChangeRecompLoopVersioner") != NULL;
+    if (enablePhaseChangeRecomp
+        && comp()->getMethodHotness() >= hot
+        && comp()->getRecompilationInfo() != NULL
+        && !(comp()->getOptimizationPlan()->getDoNotInsertPhaseChangeRecomp() || comp()->isProfilingCompilation())
+        && (specializedNodesWillBeEliminated || conditionalsWillBeEliminated)) {
+        dumpOptDetails(comp(),
+            "%s Inserting phase-change recompilation counter into unspecialized loop pre-header block_%d\n",
+            optDetailString(), clonedLoopInvariantBlock->getNumber());
+        TR::TransformUtil::insertColdPathCounterRecompilation(comp(), clonedLoopInvariantBlock);
+    }
+#endif
 
     if (trace())
         comp()->dumpMethodTrees(log, "Trees after this versioning");
