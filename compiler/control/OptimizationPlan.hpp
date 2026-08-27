@@ -142,6 +142,10 @@ public:
 
     void setDoNotInsertPhaseChangeRecomp(bool b) { _flags.set(DoNotInsertPhaseChangeRecomp, b); }
 
+    bool inducedByPatchableJProfiling() const { return _flags.testAny(InducedByPatchableJProfiling); }
+
+    void setInducedByPatchableJProfiling(bool b) { _flags.set(InducedByPatchableJProfiling, b); }
+
     // Insert epilogue yieldpoints if the method is being sampled
     bool getInsertEpilogueYieldpoints() const { return _flags.testAny(UseSampling); }
 
@@ -293,6 +297,7 @@ public:
         InsertPatchableJProfiling = 0x02000000, // Insert patchable JProfiling trees for this compilation
         DoNotInsertPhaseChangeRecomp
             = 0x04000000, // Do not insert a test in cold blocks to detect phase change and trigger recompilation
+        InducedByPatchableJProfiling = 0x08000000, // Compilation triggered by patchabl JProfiling
     };
 
 private:
