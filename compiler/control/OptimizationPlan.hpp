@@ -138,6 +138,9 @@ public:
 
     void setInsertPatchableJProfiling(bool b) { _flags.set(InsertPatchableJProfiling, b); }
 
+    bool inducedByPatchableJProfiling() const { return _flags.testAny(InducedByPatchableJProfiling); }
+
+    void setInducedByPatchableJProfiling(bool b) { _flags.set(InducedByPatchableJProfiling, b); }
     // Insert epilogue yieldpoints if the method is being sampled
     bool getInsertEpilogueYieldpoints() const { return _flags.testAny(UseSampling); }
 
@@ -287,6 +290,7 @@ public:
         InducedByDLT = 0x00800000, // Compilation that follows a DLT compilation
         DisableEDO = 0x01000000, // Do not insert EDO profiling trees for this compilation
         InsertPatchableJProfiling = 0x02000000, // Insert patchable JProfiling trees for this compilation
+        InducedByPatchableJProfiling = 0x04000000, // Compilation triggered by patchabl JProfiling
     };
 
 private:
