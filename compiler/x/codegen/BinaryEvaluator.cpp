@@ -691,9 +691,23 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
                             instr = Inst_RegImm(OP::AddRegImms(nodeIs64Bit, isWithCarry), node, targetRegister,
                                 static_cast<int32_t>(constValue), cg);
                     } else if (constValue == 1) {
-                        if (isMemOp)
+                        if (isMemOp) {
                             instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, tempMR, cg);
-                        else
+#ifdef J9_PROJECT_SPECIFIC
+                            if (cg->comp()->getOptimizationPlan()->insertPatchableJProfiling()
+                                && firstChild->getSymbolReference()->getSymbol()->isBlockFrequency()) {
+                                static TR_AtomicRegion brcAtomicRegion[] = {
+                                    // Don't yet know whether we're patching using a self-loop or a 2-byte
+                                    // jmp, but it doesn't matter because they are both 2 bytes.
+                                    //
+                                    { 0x0, 6 },
+                                    {   0, 0 }
+                                };
+                                generatePatchableCodeAlignmentInstruction(brcAtomicRegion, instr, cg);
+                                cg->addInstrToJProfCounterBumpInstrList(instr);
+                            }
+#endif
+                        } else
                             instr = Inst_RegImm(OP::ADDRegImms(nodeIs64Bit), node, targetRegister, 1, cg);
                     } else if (constValue == -1) {
                         if (isMemOp)
