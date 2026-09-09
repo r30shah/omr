@@ -767,18 +767,22 @@ TR::Register *OMR::Z::TreeEvaluator::branchEvaluator(TR::Node *node, TR::CodeGen
 TR::Register *OMR::Z::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Node *temp = node->getBranchDestination()->getNode();
-
+    TR::Instruction *instr = NULL;
     if (node->getNumChildren() > 0) {
         // GRA
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, temp->getLabel(),
+        instr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, temp->getLabel(),
             generateRegisterDependencyConditions(cg, child, 0));
         cg->decReferenceCount(child);
     } else {
-        generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, temp->getLabel());
+        instr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, temp->getLabel());
     }
-
+#ifdef J9_PROJECT_SPECIFIC
+    if (node->isBranchToValueProfilingCall()) {
+        cg->addInstrToJProfValueBranchInstrList(instr);
+    }
+#endif
     return NULL;
 }
 

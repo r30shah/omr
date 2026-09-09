@@ -1054,7 +1054,14 @@ void OMR::X86::TreeEvaluator::compareBytesForOrder(TR::Node *node, TR::CodeGener
 
 TR::Register *OMR::X86::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    Inst_Jump(OP::JMP4, node, cg);
+    TR::Instruction *instr = Inst_Jump(OP::JMP4, node, cg);
+#ifdef J9_PROJECT_SPECIFIC
+    if (node->isBranchToValueProfilingCall()) {
+        Inst_PatchableCodeAlignment(TR::X86PatchableCodeAlignmentInstruction::CALLImm4AtomicRegions,
+            instr, cg);
+        cg->addInstrToJProfValueBranchInstrList(instr);
+    }
+#endif
     return NULL;
 }
 
