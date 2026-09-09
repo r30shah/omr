@@ -5971,6 +5971,16 @@ void OMR::Node::setIsVersionableIfWithMaxExpr(TR::Compilation *c)
         _flags.set(versionIfWithMaxExpr);
 }
 
+bool OMR::Node::isBranchToValueProfilingCall()
+{
+    return _flags.testAny(branchToValueProfilingCall);
+}
+
+void OMR::Node::setIsBranchToValueProfilingCall(bool v)
+{
+    _flags.set(branchToValueProfilingCall, v);
+}
+
 bool OMR::Node::isVersionableIfWithMinExpr()
 {
     return _flags.testAny(versionIfWithMinExpr) && self()->getOpCode().isIf();

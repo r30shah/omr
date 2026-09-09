@@ -1463,6 +1463,9 @@ public:
     bool isVersionableIfWithMinExpr();
     void setIsVersionableIfWithMinExpr(TR::Compilation *c);
 
+    bool isBranchToValueProfilingCall();
+    void setIsBranchToValueProfilingCall(bool v);
+
     // Flags used by indirect stores and wrtbars for references
     bool isStoreAlreadyEvaluated();
     void setStoreAlreadyEvaluated(bool b);
@@ -2031,6 +2034,7 @@ protected:
         // Flags used by TR_if
         maxLoopIterationGuard = 0x00000800, ///< allows redundant async check removal to remove ac's
         inlineGuard = 0x00001000,
+        branchToValueProfilingCall = 0x00002000,
         swappedChildren = 0x00020000,
         versionIfWithMaxExpr = 0x00010000,
         versionIfWithMinExpr = 0x00040000,
