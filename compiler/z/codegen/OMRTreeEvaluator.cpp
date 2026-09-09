@@ -7648,8 +7648,9 @@ bool directToMemoryAddHelper(TR::CodeGenerator *cg, TR::Node *node, TR::Node *va
         if (valueChild->getOpCodeValue() == TR::isub || valueChild->getOpCodeValue() == TR::lsub) {
             value = -value;
         }
+        TR::Instruction *instr = NULL;
         if (valueChild->getFirstChild()->getReferenceCount() == 1) {
-            generateSIInstruction(cg, op, node, tempMR, value);
+            instr = generateSIInstruction(cg, op, node, tempMR, value);
 
             cg->recursivelyDecReferenceCount(valueChild);
         } else {
@@ -7657,13 +7658,19 @@ bool directToMemoryAddHelper(TR::CodeGenerator *cg, TR::Node *node, TR::Node *va
             //
             cg->evaluate(valueChild->getFirstChild());
 
-            generateSIInstruction(cg, op, node, tempMR, value);
+            instr = generateSIInstruction(cg, op, node, tempMR, value);
 
             cg->decReferenceCount(valueChild);
             cg->decReferenceCount(valueChild->getFirstChild());
             cg->decReferenceCount(valueChild->getSecondChild());
         }
 
+#ifdef J9_PROJECT_SPECIFIC
+        if (cg->comp()->getOptimizationPlan()->insertPatchableJProfiling()
+            && node->getSymbolReference()->getSymbol()->isBlockFrequency()) {
+            cg->addInstrToJProfCounterBumpInstrList(instr);
+        }
+#endif
         return true;
     }
 
