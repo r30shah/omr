@@ -3583,8 +3583,14 @@ void OMR::Options::jitPreProcess()
     self()->setOption(TR_DisableTreePatternMatching);
     self()->setOption(TR_DisableHalfSlotSpills);
 
+#if (defined(TR_HOST_X86) || defined(TR_HOST_S390))
+    self()->setOption(TR_EnablePatchableJProfiling);
+    self()->setOption(TR_DisableGuardedCountingRecompilations);
+    self()->setOption(TR_DisableProfiling);
+#endif
+
     _optLevel = -1;
-    _initialOptLevel = _quickstartDetected ? cold : -1; // Not initialized
+    _initialOptLevel = _quickstartDetected || self()->getOption(TR_EnablePatchableJProfiling) ? cold : -1; // Not initialized
     _initialCount = -1;
     _initialBCount = -1;
     _initialMILCount = -1;
