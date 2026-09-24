@@ -3312,6 +3312,7 @@ bool OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig)
             _initialCount = 20;
             _initialBCount = 20;
             _initialMILCount = 20;
+            _initialOptLevel = cold;
         }
 
         // After the counts have been set, and if SCC is used, set scount = count
