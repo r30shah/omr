@@ -3308,6 +3308,12 @@ bool OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig)
         if (self()->setCounts())
             return false; // bad string count
 
+        if (self()->getOption(TR_EnablePatchableJProfiling)) {
+            _initialCount = 20;
+            _initialBCount = 20;
+            _initialMILCount = 20;
+        }
+
         // After the counts have been set, and if SCC is used, set scount = count
         if (TR::Options::sharedClassCache()) {
             if (self()->getOption(TR_UseHigherMethodCounts)) {
