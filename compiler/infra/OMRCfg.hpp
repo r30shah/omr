@@ -248,7 +248,7 @@ public:
      *
      * Returns true if profiling information was available and used.
      */
-    bool setFrequencies();
+    bool setFrequencies(TR_ResolvedMethod *method = NULL);
     void resetFrequencies();
 
     TR::CFGNode *removeNode(TR::CFGNode *n);
@@ -287,7 +287,7 @@ public:
 
     TR_BlockCloner *clone();
 
-    void propagateColdInfo(bool);
+    void propagateColdInfo(bool generateFrequencies, TR_ResolvedMethod *method = NULL);
 
     bool consumePseudoRandomFrequencies();
 

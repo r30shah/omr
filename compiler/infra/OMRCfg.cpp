@@ -1157,7 +1157,7 @@ bool OMR::CFG::consumePseudoRandomFrequencies()
     return true;
 }
 
-bool OMR::CFG::setFrequencies()
+bool OMR::CFG::setFrequencies(TR_ResolvedMethod *method)
 {
     if (this == comp()->getFlowGraph()) {
         self()->resetFrequencies();
@@ -1628,7 +1628,7 @@ TR_BlockCloner *OMR::CFG::clone()
     return cloner;
 }
 
-void OMR::CFG::propagateColdInfo(bool generateFrequencies)
+void OMR::CFG::propagateColdInfo(bool generateFrequencies, TR_ResolvedMethod *method)
 {
     vcount_t visitCount = comp()->incVisitCount();
     TR_Queue<TR::Block> queue(trMemory());
@@ -1644,7 +1644,7 @@ void OMR::CFG::propagateColdInfo(bool generateFrequencies)
     // Forward Flow
     //
     if (generateFrequencies) {
-        self()->setFrequencies();
+        self()->setFrequencies(method);
     }
 
     bool haveStructure = (_rootStructure != NULL);
