@@ -692,21 +692,24 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
                                 static_cast<int32_t>(constValue), cg);
                     } else if (constValue == 1) {
                         if (isMemOp) {
-                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, tempMR, cg);
 #ifdef J9_PROJECT_SPECIFIC
-                            if (cg->comp()->getOptimizationPlan()->insertPatchableJProfiling()
-                                && firstChild->getSymbolReference()->getSymbol()->isBlockFrequency()) {
-                                static TR_AtomicRegion brcAtomicRegion[] = {
-                                    // Don't yet know whether we're patching using a self-loop or a 2-byte
-                                    // jmp, but it doesn't matter because they are both 2 bytes.
-                                    //
-                                    { 0x0, 6 },
-                                    {   0, 0 }
-                                };
-                                Inst_PatchableCodeAlignment(brcAtomicRegion, instr, cg);
-                                cg->addInstrToJProfCounterBumpInstrList(instr);
-                            }
+                        if (cg->comp()->getOptimizationPlan()->insertPatchableJProfiling()
+                            && firstChild->getSymbolReference()->getSymbol()->isBlockFrequency()) {
+                            TR::Register *tempReg = cg->allocateRegister();
+                            instr = Inst_RegMem(OP::LEARegMem(comp->target().is64Bit()), node, tempReg, tempMR, cg);
+                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, MRef_Bdisp32(tempReg, 0, cg);
+                            static TR_AtomicRegion brcAtomicRegion[] = {
+                                // Don't yet know whether we're patching using a self-loop or a 2-byte
+                                // jmp, but it doesn't matter because they are both 2 bytes.
+                                //
+                                { 0x0, 6 },
+                                {   0, 0 }
+                            };
+                            Inst_PatchableCodeAlignment(brcAtomicRegion, instr, cg);
+                            cg->addInstrToJProfCounterBumpInstrList(instr);
+                        } else
 #endif
+                                instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, tempMR, cg);
                         } else
                             instr = Inst_RegImm(OP::ADDRegImms(nodeIs64Bit), node, targetRegister, 1, cg);
                     } else if (constValue == -1) {
@@ -1107,10 +1110,12 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
                         instr = Inst_RegImm(OP::SUBRegImms(nodeIs64Bit), node, targetRegister, 1, cg);
                 } else if (constValue == -1) {
                     if (isMemOp) {
-                        instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, tempMR, cg);
 #ifdef J9_PROJECT_SPECIFIC
                         if (cg->comp()->getOptimizationPlan()->insertPatchableJProfiling()
                             && firstChild->getSymbolReference()->getSymbol()->isBlockFrequency()) {
+                            TR::Register *tempReg = cg->allocateRegister();
+                            instr = Inst_RegMem(OP::LEARegMem(comp->target().is64Bit()), node, tempReg, tempMR, cg);
+                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, MRef_Bdisp32(tempReg, 0, cg);
                             static TR_AtomicRegion brcAtomicRegion[] = {
                                 // Don't yet know whether we're patching using a self-loop or a 2-byte
                                 // jmp, but it doesn't matter because they are both 2 bytes.
@@ -1120,8 +1125,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
                             };
                             Inst_PatchableCodeAlignment(brcAtomicRegion, instr, cg);
                             cg->addInstrToJProfCounterBumpInstrList(instr);
-                        }
+                        } else
 #endif
+                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, tempMR, cg);
                     }
                     else
                         instr = Inst_RegImm(OP::ADDRegImms(nodeIs64Bit), node, targetRegister, 1, cg);
