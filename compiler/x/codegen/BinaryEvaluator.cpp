@@ -697,7 +697,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
                             && firstChild->getSymbolReference()->getSymbol()->isBlockFrequency()) {
                             TR::Register *tempReg = cg->allocateRegister();
                             instr = Inst_RegMem(OP::LEARegMem(comp->target().is64Bit()), node, tempReg, tempMR, cg);
-                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, MRef_Bdisp32(tempReg, 0, cg);
+                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, MRef_Bdisp32(tempReg, 0, cg), cg);
                             static TR_AtomicRegion brcAtomicRegion[] = {
                                 // Don't yet know whether we're patching using a self-loop or a 2-byte
                                 // jmp, but it doesn't matter because they are both 2 bytes.
@@ -1115,7 +1115,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
                             && firstChild->getSymbolReference()->getSymbol()->isBlockFrequency()) {
                             TR::Register *tempReg = cg->allocateRegister();
                             instr = Inst_RegMem(OP::LEARegMem(comp->target().is64Bit()), node, tempReg, tempMR, cg);
-                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, MRef_Bdisp32(tempReg, 0, cg);
+                            instr = Inst_Mem(OP::INCMem(nodeIs64Bit), node, MRef_Bdisp32(tempReg, 0, cg), cg);
                             static TR_AtomicRegion brcAtomicRegion[] = {
                                 // Don't yet know whether we're patching using a self-loop or a 2-byte
                                 // jmp, but it doesn't matter because they are both 2 bytes.
