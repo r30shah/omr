@@ -1327,7 +1327,7 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
             "The maximum number of inlined methods %d is reached\n", TR_ByteCodeInfo::maxCallerIndex);
         return false;
     }
-
+    TR_ASSERT_FATAL(methodInfo != NULL, "Increasing the inlined depth with the NULL methodInfo");
     // in jsr292 "smart" inliner can run multiple times. we need to reconstruct a callstack
     // for all the callsites with the caller indices != -1 to make sure each catch block
     // can be uniquely identified by a (depthIndex, handlerIndex) pair.
