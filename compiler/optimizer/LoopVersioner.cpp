@@ -4502,6 +4502,23 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 #ifdef J9_PROJECT_SPECIFIC
     // Phase-change recompilation trigger.
     //
+    if (comp()->getMethodHotness() >= hot
+        && !shouldOnlySpecializeLoops() && !_neitherLoopCold) {
+            // Insert dynamic debug counter in the clonedLoopInvariantBlock
+        TR::DebugCounter::prependDebugCounter(comp(),
+            TR::DebugCounter::debugCounterName(comp(), "phaseChangeColdLoop/(%s)/%s",
+                comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness())),
+                clonedLoopInvariantBlock->getEntry()->getNextTreeTop(), 1, TR::DebugCounter::Free);
+        if (comp()->getRecompilationInfo() != NULL
+            && comp()->getOptions()->getColdPathRecompTriggerCount() > 0
+            && !(comp()->getOptimizationPlan()->getDoNotInsertPhaseChangeRecomp() || comp()->isProfilingCompilation())
+            && performTransformation(comp(),
+                "%s Inserting phase-change recompilation counter into cold loop pre-header block_%d\n",
+                OPT_DETAILS_LOOP_VERSIONER, clonedLoopInvariantBlock)) {
+            TR::TransformUtil::insertColdPathCounterRecompilation(comp(), clonedLoopInvariantBlock);
+        }
+    }
+/*
     if (comp()->getMethodHotness() >= hot && comp()->getRecompilationInfo() != NULL
         && comp()->getOptions()->getColdPathRecompTriggerCount() > 0
         && !(comp()->getOptimizationPlan()->getDoNotInsertPhaseChangeRecomp() || comp()->isProfilingCompilation())
@@ -4511,6 +4528,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             OPT_DETAILS_LOOP_VERSIONER, clonedLoopInvariantBlock)) {
         TR::TransformUtil::insertColdPathCounterRecompilation(comp(), clonedLoopInvariantBlock);
     }
+*/
 #endif
 
     if (trace())
