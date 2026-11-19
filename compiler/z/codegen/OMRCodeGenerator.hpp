@@ -557,7 +557,7 @@ public:
 
     bool getSupportsBitOpCodes() { return true; }
 
-    int32_t getMaxLengthOfIncMemoryInstruction() { return 6; }
+    int32_t getMaxLengthOfPatchableIncMemoryInstruction() { return 6; }
 
     bool getSupportsImplicitNullChecks() { return _cgFlags.testAny(S390CG_implicitNullChecks); }
 
